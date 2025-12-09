@@ -6,7 +6,7 @@ import 'dart:io' as io;
 import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 import 'perft_parser.dart';
 
-void main() async {
+void main() {
   group('Three Check', () {
     final tests = Parser()
         .parse(io.File('test/resources/3check.perft').readAsStringSync());

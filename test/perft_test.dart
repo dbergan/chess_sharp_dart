@@ -5,7 +5,7 @@ import 'perft_parser.dart';
 
 const nodeLimit = 10000000;
 
-void main() async {
+void main() {
   group('Standard chess', () {
     test('initial position', () {
       const pos = Chess.initial;
