@@ -1,7 +1,7 @@
 Supports Chess♯ family of variants in dart. Learn more about Chess♯ here:
 
-https://chess-sharp.games/
-https://chess-sharp.games/ChessSharp_Rules.pdf
+- https://chess-sharp.games/
+- https://chess-sharp.games/ChessSharp_Rules.pdf
 
 ## Usage
 
@@ -12,7 +12,7 @@ import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 ## Additional information
 
 Repository:
-https://github.com/dbergan/chess_sharp_dart
+- https://github.com/dbergan/chess_sharp_dart
 
 This package was forked from:
-https://github.com/lichess-org/dartchess (by lichess) version 0.11.1 on 2025-12-09
+- https://github.com/lichess-org/dartchess (by lichess) version 0.11.1 on 2025-12-09
