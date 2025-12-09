@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:dartchess/dartchess.dart';
+import 'package:chess_sharp_dart/dartchess.dart';
 
 void main() {
   test('makeSquareSet', () {

@@ -271,7 +271,19 @@ class PgnGame<T extends PgnNodeData> {
           }
       }
     }
-    token.write(Outcome.toPgnString(Outcome.fromPgn(headers['Result'])));
+    // Chess♯ variants have different result strings
+    final rule = Rule.fromPgn(headers['Variant']);
+    if (rule == Rule.chessSharp ||
+        rule == Rule.chessDoubleSharp ||
+        rule == Rule.chessFlat ||
+        rule == Rule.chessDoubleFlat ||
+        rule == Rule.chessTripleFlat ||
+        rule == Rule.classicalChessSharp) {
+      token.write(
+          Outcome.toPgnStringChessSharp(Outcome.fromPgn(headers['Result'])));
+    } else {
+      token.write(Outcome.toPgnString(Outcome.fromPgn(headers['Result'])));
+    }
     builder.writeln(token.toString());
     return builder.toString();
   }

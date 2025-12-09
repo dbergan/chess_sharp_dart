@@ -224,6 +224,21 @@ class Pockets {
   /// An empty pocket.
   static const empty = Pockets(value: _emptyPocketsBySide);
 
+  /// Chess𝄫 initial pocket
+  static const chessDoubleFlat = Pockets(value: _doubleflatPocketsBySide);
+
+  /// Chess𝄫 initial pocket
+  static const chessTripleFlat = Pockets(value: _tripleflatPocketsBySide);
+
+  /// Chess♭ initial pocket
+  static const chessFlat = Pockets(value: _flatPocketsBySide);
+
+  /// Chess♯ initial pocket
+  static const chessSharp = Pockets(value: _sharpPocketsBySide);
+
+  /// Chess𝄪 initial pocket
+  static const chessDoubleSharp = Pockets(value: _doublesharpPocketsBySide);
+
   /// Gets the total number of pieces in the pocket.
   int get size => value.values
       .fold(0, (acc, e) => acc + e.values.fold(0, (acc, e) => acc + e));
@@ -236,6 +251,35 @@ class Pockets {
   /// Counts the number of pieces by [Role].
   int count(Role role) {
     return value[Side.white]![role]! + value[Side.black]![role]!;
+  }
+
+  /// Counts the number of pieces for [Side].
+  int countSide(Side side) {
+    final bySide = value[side]!;
+    return bySide[Role.knight]! +
+        bySide[Role.bishop]! +
+        bySide[Role.rook]! +
+        bySide[Role.queen]! +
+        bySide[Role.king]!;
+  }
+
+  /// Returns diff of material value between [Side.white] and [Side.black].
+  ///
+  /// Positive values indicate an advantage for white, negative for black.
+  /// Zero indicates material equality.
+  num get materialDiff {
+    return (1 * value[Side.white]![Role.pawn]! +
+            3 * value[Side.white]![Role.knight]! +
+            3 * value[Side.white]![Role.bishop]! +
+            5 * value[Side.white]![Role.rook]! +
+            9 * value[Side.white]![Role.queen]! +
+            999 * value[Side.white]![Role.king]!) -
+        (1 * value[Side.black]![Role.pawn]! +
+            3 * value[Side.black]![Role.knight]! +
+            3 * value[Side.black]![Role.bishop]! +
+            5 * value[Side.black]![Role.rook]! +
+            9 * value[Side.black]![Role.queen]! +
+            999 * value[Side.black]![Role.king]!);
   }
 
   /// Checks whether this side has at least 1 quality (any piece but a pawn).
@@ -251,6 +295,16 @@ class Pockets {
   /// Checks whether this side has at least 1 pawn.
   bool hasPawn(Side side) {
     return value[side]![Role.pawn]! > 0;
+  }
+
+  /// Checks whether this side has only queens.
+  bool onlyQueens(Side side) {
+    final bySide = value[side]!;
+    return bySide[Role.pawn]! == 0 &&
+        bySide[Role.knight]! == 0 &&
+        bySide[Role.bishop]! == 0 &&
+        bySide[Role.rook]! == 0 &&
+        bySide[Role.king]! == 0;
   }
 
   /// Increments the number of pieces in the pocket of that [Side] and [Role].
@@ -272,6 +326,11 @@ class Pockets {
 
   @override
   int get hashCode => value.hashCode;
+
+  @override
+  String toString() {
+    return _makePockets(this);
+  }
 }
 
 Pockets _parsePockets(String pocketPart) {
@@ -347,6 +406,8 @@ SquareSet _parseCastlingFen(Board board, String castlingPart) {
 }
 
 String _makePockets(Pockets pockets) {
+  // Chess♯ no need to show empty pockets
+  if (pockets.size < 1) return '';
   final wPart = [
     for (final r in Role.values)
       ...List.filled(pockets.of(Side.white, r), r.letter)
@@ -410,4 +471,74 @@ const ByRole<int> _emptyPocket = IMapConst({
 const BySide<ByRole<int>> _emptyPocketsBySide = IMapConst({
   Side.white: _emptyPocket,
   Side.black: _emptyPocket,
+});
+
+const ByRole<int> _tripleflatPocket = IMapConst({
+  Role.pawn: 0,
+  Role.knight: 0,
+  Role.bishop: 0,
+  Role.rook: 0,
+  Role.queen: 0,
+  Role.king: 1,
+});
+
+const ByRole<int> _doubleflatPocket = IMapConst({
+  Role.pawn: 0,
+  Role.knight: 0,
+  Role.bishop: 0,
+  Role.rook: 0,
+  Role.queen: 1,
+  Role.king: 1,
+});
+
+const ByRole<int> _flatPocket = IMapConst({
+  Role.pawn: 0,
+  Role.knight: 0,
+  Role.bishop: 2,
+  Role.rook: 2,
+  Role.queen: 1,
+  Role.king: 1,
+});
+
+const ByRole<int> _sharpPocket = IMapConst({
+  Role.pawn: 0,
+  Role.knight: 2,
+  Role.bishop: 2,
+  Role.rook: 2,
+  Role.queen: 1,
+  Role.king: 1,
+});
+
+const ByRole<int> _doublesharpPocket = IMapConst({
+  Role.pawn: 0,
+  Role.knight: 2,
+  Role.bishop: 2,
+  Role.rook: 2,
+  Role.queen: 2,
+  Role.king: 1,
+});
+
+const BySide<ByRole<int>> _doubleflatPocketsBySide = IMapConst({
+  Side.white: _doubleflatPocket,
+  Side.black: _doubleflatPocket,
+});
+
+const BySide<ByRole<int>> _tripleflatPocketsBySide = IMapConst({
+  Side.white: _tripleflatPocket,
+  Side.black: _tripleflatPocket,
+});
+
+const BySide<ByRole<int>> _flatPocketsBySide = IMapConst({
+  Side.white: _flatPocket,
+  Side.black: _flatPocket,
+});
+
+const BySide<ByRole<int>> _sharpPocketsBySide = IMapConst({
+  Side.white: _sharpPocket,
+  Side.black: _sharpPocket,
+});
+
+const BySide<ByRole<int>> _doublesharpPocketsBySide = IMapConst({
+  Side.white: _doublesharpPocket,
+  Side.black: _doublesharpPocket,
 });

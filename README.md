@@ -1,33 +1,18 @@
-Chess and chess variant rules written in dart for native platforms (does not support web).
+Supports Chess♯ family of variants in dart. Learn more about Chess♯ here:
 
-## Features
+https://chess-sharp.games/
+https://chess-sharp.games/ChessSharp_Rules.pdf
 
-- Completely immutable Position class
-- Read and write FEN
-- Read and write SAN
-- Chess rules:
-    - move making
-    - legal moves generation
-    - game end and outcome
-    - insufficient material
-    - setup validation
-- Chess960 support
-- Chess variants: Antichess, Atomic, Crazyhouse, KingOfTheHill, ThreeCheck
-- PGN parser and writer
-- Bitboards
-- Attacks and rays using hyperbola quintessence
-
-## Example
+## Usage
 
 ```dart
-import 'package:dartchess/dartchess.dart';
-
-final pos = Chess.fromSetup(Setup.parseFen('r1bqkbnr/ppp2Qpp/2np4/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4'));
-assert(pos.isCheckmate == true);
+import 'package:chess_sharp_dart/dartchess.dart';
 ```
 
 ## Additional information
 
-This package was heavily inspired from:
-- https://github.com/niklasf/chessops
-- https://github.com/niklasf/shakmaty
+Repository:
+https://github.com/dbergan/chess_sharp_dart
+
+This package was forked from:
+https://github.com/lichess-org/dartchess (by lichess) version 0.11.1 on 2025-12-09

@@ -1,0 +1,11 @@
+[Event "CPU game"]
+[Site "Chess♯ app"]
+[Date "May 13, 2024 3:00:02 PM"]
+[Round ""]
+[White "C-3PO (CPU)"]
+[Black "Player"]
+[Result "0–10"]
+[Variant "Chess♯"]
+[TimeControl "Correspondence"]
+
+1. R@a1 { [%timestamp 1715630413694] } K@d8 { [%timestamp 1715630416697] } 2. B@c1 { [%timestamp 1715630418059] } e6 { [%timestamp 1715630419639] } 3. B@d1 { [%timestamp 1715630421075] } e5 { [%timestamp 1715630422384] } 4. R@f1 { [%timestamp 1715630423852] } e4 { [%timestamp 1715630425225] } 5. N@h1 { [%timestamp 1715630426637] } e3 { [%timestamp 1715630428061] } 6. K@e1 { [%timestamp 1715630429429] } exd2 { [%timestamp 1715630431023] } 7. N@g1 { [%timestamp 1715630432442] } dxe1=Q { [%timestamp 1715630440079] } 0–10

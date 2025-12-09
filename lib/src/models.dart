@@ -237,14 +237,70 @@ extension type const Square._(int value) implements int {
 
   /// All squares on the chessboard, from a1 to h8.
   static const values = [
-    a1, b1, c1, d1, e1, f1, g1, h1,
-    a2, b2, c2, d2, e2, f2, g2, h2,
-    a3, b3, c3, d3, e3, f3, g3, h3,
-    a4, b4, c4, d4, e4, f4, g4, h4,
-    a5, b5, c5, d5, e5, f5, g5, h5,
-    a6, b6, c6, d6, e6, f6, g6, h6,
-    a7, b7, c7, d7, e7, f7, g7, h7,
-    a8, b8, c8, d8, e8, f8, g8, h8
+    a1,
+    b1,
+    c1,
+    d1,
+    e1,
+    f1,
+    g1,
+    h1,
+    a2,
+    b2,
+    c2,
+    d2,
+    e2,
+    f2,
+    g2,
+    h2,
+    a3,
+    b3,
+    c3,
+    d3,
+    e3,
+    f3,
+    g3,
+    h3,
+    a4,
+    b4,
+    c4,
+    d4,
+    e4,
+    f4,
+    g4,
+    h4,
+    a5,
+    b5,
+    c5,
+    d5,
+    e5,
+    f5,
+    g5,
+    h5,
+    a6,
+    b6,
+    c6,
+    d6,
+    e6,
+    f6,
+    g6,
+    h6,
+    a7,
+    b7,
+    c7,
+    d7,
+    e7,
+    f7,
+    g7,
+    h7,
+    a8,
+    b8,
+    c8,
+    d8,
+    e8,
+    f8,
+    g8,
+    h8
   ];
 
   /// The file of the square on the board.
@@ -722,7 +778,15 @@ enum Rule {
   atomic,
   horde,
   racingKings,
-  crazyhouse;
+  crazyhouse,
+  chessSharp,
+  chessDoubleSharp, // A Chess♯ game with 2 queens
+  chessFlat, // A Chess♯ game without knights
+  chessDoubleFlat, // A Chess♯ game without knights, bishops, or rooks
+  chessTripleFlat, // A Chess♯ game with only the king in the reserve
+  classicalChessSharp, // Classical chess with Chess# tournament scoring system
+  preChess, // Benko's PreChess
+  ;
 
   /// Parses a PGN header variant tag
   static Rule? fromPgn(String? variant) {
@@ -781,6 +845,74 @@ enum Rule {
       case 'racing':
       case 'race':
         return Rule.racingKings;
+      case 'chess♯':
+      case 'chess ♯':
+      case 'chess-sharp':
+      case 'chess sharp':
+      case 'chesssharp':
+      case 'chess#':
+      case 'chess #':
+        // The rules for Chess♯ can be found at
+        // https://chess-sharp.games/ChessSharp_Rules.pdf
+        return Rule.chessSharp;
+      case 'chess𝄪':
+      case 'chess 𝄪':
+      case 'chess-double-sharp':
+      case 'chess double sharp':
+      case 'chessdoublesharp':
+        return Rule.chessDoubleSharp;
+      case 'chess♭':
+      case 'chess ♭':
+      case 'chess-flat':
+      case 'chess flat':
+      case 'chessflat':
+        return Rule.chessFlat;
+      case 'chess𝄫':
+      case 'chess♭♭':
+      case 'chess 𝄫':
+      case 'chess ♭♭':
+      case 'chess ♭ ♭':
+      case 'chess-double-flat':
+      case 'chess double flat':
+      case 'chessdoubleflat':
+        return Rule.chessDoubleFlat;
+      case 'chess𝄫♭':
+      case 'chess♭𝄫':
+      case 'chess♭♭♭':
+      case 'chess 𝄫♭':
+      case 'chess ♭𝄫':
+      case 'chess ♭♭♭':
+      case 'chess 𝄫 ♭':
+      case 'chess ♭ 𝄫':
+      case 'chess ♭ ♭ ♭':
+      case 'chess-triple-flat':
+      case 'chess triple flat':
+      case 'chesstripleflat':
+        return Rule.chessTripleFlat;
+      // Standard chess, but with the Chess♯ tournament scoring system
+      // https://chess-sharp.games/ChessSharp_Rules.pdf
+      case 'classical chess♯':
+      case 'classical chess ♯':
+      case 'classical chess-sharp':
+      case 'classical chess sharp':
+      case 'classical chesssharp':
+        return Rule.classicalChessSharp;
+      // Benko's Pre-Chess
+      // https://www.jsbeasley.co.uk/encyc/encyc.pdf (pg 76)
+      // https://quantumgambitz.com/blog/chess/cga/bronstein-chess-pre-chess-shuffle-chess
+      case 'prechess':
+      case 'pre chess':
+      case 'pre-chess':
+      case 'metachess':
+      case 'meta chess':
+      case 'meta-chess':
+      case 'benko':
+      case 'benko prechess':
+      case 'benko pre-chess':
+      case 'bronstein':
+      case 'bronstein prechess':
+      case 'bronstein pre-chess':
+        return Rule.preChess;
       default:
         return null;
     }

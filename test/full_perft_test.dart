@@ -3,7 +3,7 @@ library;
 
 import 'package:test/test.dart';
 import 'dart:io' as io;
-import 'package:dartchess/dartchess.dart';
+import 'package:chess_sharp_dart/dartchess.dart';
 import 'perft_parser.dart';
 
 void main() async {

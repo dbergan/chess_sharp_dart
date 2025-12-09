@@ -11,7 +11,7 @@ import 'utils.dart';
 
 /// A base class for playable chess or chess variant positions.
 ///
-/// See [Chess] for a concrete implementation of standard rules.
+/// See [Chess] for a concrete implementation of standard Rule.
 @immutable
 abstract class Position {
   const Position({
@@ -88,6 +88,20 @@ abstract class Position {
       case Rule.racingKings:
         return RacingKings.fromSetup(setup,
             ignoreImpossibleCheck: ignoreImpossibleCheck);
+      case Rule.chessSharp:
+      case Rule.chessFlat:
+      case Rule.chessDoubleSharp:
+      case Rule.chessDoubleFlat:
+      case Rule.chessTripleFlat:
+        return ChessSharp.fromSetup(setup);
+      case Rule.classicalChessSharp:
+        // TODO: Implement ClassicalChessSharp
+        // return ClassicalChessSharp.fromSetup(setup);
+        return ChessSharp.fromSetup(setup);
+      case Rule.preChess:
+        // TODO: Implement PreChess
+        // return PreChess.fromSetup(setup);
+        return ChessSharp.fromSetup(setup);
     }
   }
 
@@ -95,6 +109,7 @@ abstract class Position {
   static Position initialPosition(Rule rule) {
     switch (rule) {
       case Rule.chess:
+      case Rule.classicalChessSharp:
         return Chess.initial;
       case Rule.antichess:
         return Antichess.initial;
@@ -110,6 +125,17 @@ abstract class Position {
         return Horde.initial;
       case Rule.racingKings:
         return RacingKings.initial;
+      case Rule.chessSharp:
+      case Rule.preChess:
+        return ChessSharp.initial;
+      case Rule.chessFlat:
+        return ChessSharp.chessFlat;
+      case Rule.chessDoubleSharp:
+        return ChessSharp.chessDoubleSharp;
+      case Rule.chessDoubleFlat:
+        return ChessSharp.chessDoubleFlat;
+      case Rule.chessTripleFlat:
+        return ChessSharp.chessTripleFlat;
     }
   }
 
@@ -153,16 +179,49 @@ abstract class Position {
       !isVariantEnd && checkers.isNotEmpty && !hasSomeLegalMoves;
 
   /// Tests for stalemate.
-  bool get isStalemate =>
-      !isVariantEnd && checkers.isEmpty && !hasSomeLegalMoves;
+  bool get isStalemate => this is ChessSharp
+      ? (!isVariantEnd && checkers.isEmpty && allMovesSuicide)
+      : (!isVariantEnd && checkers.isEmpty && !hasSomeLegalMoves);
+
+  /// Tests for impasse (50-moves without a pawn move or capture).
+  bool get isImpasse => halfmoves >= 100;
+
+  /// Returns diff of material value between [Side.white] and [Side.black].
+  ///
+  /// Positive values indicate an advantage for white, negative for black.
+  /// Zero indicates material equality. (Does not include pieces in the pocket.)
+  num get materialDiff {
+    return (1 * board.piecesOf(Side.white, Role.pawn).size +
+            3 * board.piecesOf(Side.white, Role.knight).size +
+            3 * board.piecesOf(Side.white, Role.bishop).size +
+            5 * board.piecesOf(Side.white, Role.rook).size +
+            9 * board.piecesOf(Side.white, Role.queen).size +
+            999 * board.piecesOf(Side.white, Role.king).size) -
+        (1 * board.piecesOf(Side.black, Role.pawn).size +
+            3 * board.piecesOf(Side.black, Role.knight).size +
+            3 * board.piecesOf(Side.black, Role.bishop).size +
+            5 * board.piecesOf(Side.black, Role.rook).size +
+            9 * board.piecesOf(Side.black, Role.queen).size +
+            999 * board.piecesOf(Side.black, Role.king).size);
+  }
+
+  /// Returns diff of material value between [Side.white] and [Side.black].
+  ///
+  /// Positive values indicate an advantage for white, negative for black.
+  /// Zero indicates material equality.
+  num get materialDiffWithPockets {
+    return materialDiff + (pockets?.materialDiff ?? 0);
+  }
 
   /// The outcome of the game, or `null` if the game is not over.
   Outcome? get outcome {
     if (variantOutcome != null) {
       return variantOutcome;
     } else if (isCheckmate) {
-      return Outcome(winner: turn.opposite);
-    } else if (isInsufficientMaterial || isStalemate) {
+      return Outcome(winner: turn.opposite, endType: EndType.decisive);
+    } else if (isStalemate) {
+      return Outcome.stalemate;
+    } else if (isInsufficientMaterial) {
       return Outcome.draw;
     } else {
       return null;
@@ -180,6 +239,56 @@ abstract class Position {
       if (_legalMovesOf(square, context: context).isNotEmpty) return true;
     }
     return false;
+  }
+
+  /// Tests if the player has a king on the board. (Chess♯)
+  bool get kingOnBoard => board.piecesOf(turn, Role.king).isNotEmpty;
+
+  /// Tests if the player has a king on the board. (Chess♯)
+  bool kingOnBoardSide(Side side) => board.piecesOf(side, Role.king).isNotEmpty;
+
+  /// Tests if the player only has queens in the pocket. (Chess♯)
+  bool get onlyQueensInPocket => pockets?.onlyQueens(turn) ?? false;
+
+  /// Tests if the player only has queens in the pocket. (Chess♯)
+  bool onlyQueensInPocketSide(Side side) => pockets?.onlyQueens(side) ?? false;
+
+  /// How many open squares there are to place pieces from the pocket. (Chess♯)
+  int get openPlacementSquares {
+    final mask = board.occupied.complement().intersect(turn == Side.white
+        ? const SquareSet.fromRank(Rank(0))
+        : const SquareSet.fromRank(Rank(7)));
+
+    return mask.size;
+  }
+
+  /// How many open squares there are to place pieces from the pocket. (Chess♯)
+  int openPlacementSquaresSide(Side side) {
+    final mask = board.occupied.complement().intersect(side == Side.white
+        ? const SquareSet.fromRank(Rank(0))
+        : const SquareSet.fromRank(Rank(7)));
+
+    return mask.size;
+  }
+
+  /// Returns true if all legal moves put the king in check.
+  ///
+  /// A test to help evalutate stalemate in variants like Chess♯ where moving
+  /// into check is legal.
+  bool get allMovesSuicide {
+    if (pockets != null && pockets!.countSide(turn) > 0) {
+      if (legalDrops.size > 0) return false;
+    }
+    final context = _makeContext();
+    for (final square in board.bySide(turn).squares) {
+      for (final newSquare in _legalMovesOf(square, context: context).squares) {
+        final a = play(NormalMove(to: newSquare, from: square));
+        if (a.checkersOnThem.isEmpty) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /// Gets all the legal moves of this position.
@@ -200,6 +309,90 @@ abstract class Position {
     });
   }
 
+  /// Gets all the legal moves of this position as a list of [Move]s.
+  List<Move> get legalMovesList {
+    final legalMoves = <Move>[];
+    final allRoles = <Role>[
+      Role.pawn,
+      Role.knight,
+      Role.bishop,
+      Role.rook,
+      Role.queen,
+      Role.king
+    ];
+    for (int a = 0; a < 64; a++) {
+      for (int b = 0; b < 64; b++) {
+        if (isLegal(NormalMove(from: Square(a), to: Square(b)))) {
+          // pawn promotions
+          if ((b < 8 || b > 55) &&
+              board.pieceAt(Square(a))!.role == Role.pawn) {
+            for (final myRole in allRoles) {
+              if (isLegal(NormalMove(
+                  from: Square(a), to: Square(b), promotion: myRole))) {
+                legalMoves.add(NormalMove(
+                    from: Square(a), to: Square(b), promotion: myRole));
+              }
+            }
+          } else {
+            legalMoves.add(NormalMove(from: Square(a), to: Square(b)));
+          }
+        }
+      }
+    }
+    for (final pieceRole in allRoles) {
+      for (int a = 0; a < 64; a++) {
+        if (isLegal(DropMove(role: pieceRole, to: Square(a)))) {
+          legalMoves.add(DropMove(role: pieceRole, to: Square(a)));
+        }
+      }
+    }
+    return legalMoves;
+  }
+
+  List<Move> get legalCaptureList {
+    final List<Move> captureList = [];
+    final SquareSet enemyPieces = board.bySide(turn.opposite);
+    for (final move in legalMovesList) {
+      if (enemyPieces.isIntersected(SquareSet.fromSquare(move.to))) {
+        captureList.add(move);
+      }
+    }
+    return captureList;
+  }
+
+  List<Move> get legalNonCaptureList {
+    final List<Move> nonCaptureList = [];
+    final SquareSet enemyPieces = board.bySide(turn.opposite);
+    for (final move in legalMovesList) {
+      if (enemyPieces.isIntersected(SquareSet.fromSquare(move.to)) == false) {
+        nonCaptureList.add(move);
+      }
+    }
+    return nonCaptureList;
+  }
+
+  List<Move> get legalKingCaptureList {
+    final List<Move> kingCaptureList = [];
+    final Square? enemyKing = board.kingOf(turn.opposite);
+    for (final move in legalMovesList) {
+      if (move.to == enemyKing) {
+        kingCaptureList.add(move);
+      }
+    }
+    return kingCaptureList;
+  }
+
+  List<Move> get legalNonKingCaptureList {
+    final List<Move> nonKingCaptureList = [];
+    final Square? enemyKing = board.kingOf(turn.opposite);
+    for (final move in legalMovesList) {
+      if (move.to != enemyKing) {
+        nonKingCaptureList.add(move);
+      }
+    }
+    return nonKingCaptureList;
+  }
+
   /// Gets all the legal drops of this position.
   SquareSet get legalDrops => SquareSet.empty;
 
@@ -207,6 +400,12 @@ abstract class Position {
   SquareSet get checkers {
     final king = board.kingOf(turn);
     return king != null ? kingAttackers(king, turn.opposite) : SquareSet.empty;
+  }
+
+  /// SquareSet of our pieces giving check to their king.
+  SquareSet get checkersOnThem {
+    final king = board.kingOf(turn.opposite);
+    return king != null ? kingAttackers(king, turn) : SquareSet.empty;
   }
 
   /// Attacks that a king on `square` would have to deal with.
@@ -518,6 +717,17 @@ abstract class Position {
     }
   }
 
+  /// Plays a move from a Standard Algebraic Notation string.
+  ///
+  /// Throws a [PlayException] if the move is not legal.
+  Position playSan(String san) {
+    final move = parseSan(san);
+    if (move == null) {
+      throw PlayException('Invalid SAN $san');
+    }
+    return play(move);
+  }
+
   /// Plays a move without checking if the move is legal and returns the updated [Position].
   Position playUnchecked(Move move) {
     switch (move) {
@@ -580,7 +790,10 @@ abstract class Position {
         return copyWith(
           halfmoves: isCapture || piece.role == Role.pawn ? 0 : halfmoves + 1,
           fullmoves: turn == Side.black ? fullmoves + 1 : fullmoves,
-          pockets: capturedPiece != null
+          // Chess♯ does not put captured pieces in the pocket the way Crazyhouse does.
+          // (The major pieces start in the pocket for the sake of opening variety.
+          // After that, when they die, they die, just like classical chess.)
+          pockets: (this is! ChessSharp && capturedPiece != null)
               ? pockets?.increment(capturedPiece.color.opposite,
                   capturedPiece.promoted ? Role.pawn : capturedPiece.role)
               : pockets,
@@ -815,7 +1028,7 @@ abstract class Position {
 
   /// Gets the legal moves for that [Square].
   ///
-  /// Optionnaly pass a [_Context] of the position, to optimize performance when
+  /// Optionally pass a [_Context] of the position, to optimize performance when
   /// calling this method several times.
   SquareSet _legalMovesOf(Square square, {_Context? context}) {
     final ctx = context ?? _makeContext();
@@ -831,8 +1044,9 @@ abstract class Position {
       final step = square + delta;
       if (0 <= step && step < 64 && !board.occupied.has(Square(step))) {
         pseudo = pseudo.withSquare(Square(step));
-        final canDoubleStep =
-            turn == Side.white ? square < Square.a3 : square >= Square.a7;
+        // In Chess♯, pawns never sprint (double-step)
+        final canDoubleStep = this is! ChessSharp &&
+            (turn == Side.white ? square < Square.a3 : square >= Square.a7);
         final doubleStep = step + delta;
         if (canDoubleStep && !board.occupied.has(Square(doubleStep))) {
           pseudo = pseudo.withSquare(Square(doubleStep));
@@ -857,7 +1071,8 @@ abstract class Position {
     }
 
     pseudo = pseudo.diff(board.bySide(turn));
-    if (ctx.king != null) {
+    // In Chess♯, check and checkmate do not restrict movement
+    if (ctx.king != null && this is! ChessSharp) {
       if (piece.role == Role.king) {
         final occ = board.occupied.withoutSquare(square);
         for (final to in pseudo.squares) {
@@ -1027,7 +1242,7 @@ abstract class Chess extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass [ignoreImpossibleCheck] if you want to skip that requirement.
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that requirement.
   factory Chess.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Chess(
       board: setup.board,
@@ -1089,7 +1304,7 @@ abstract class Antichess extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass [ignoreImpossibleCheck] if you want to skip that
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
   /// requirement.
   factory Antichess.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Antichess(
@@ -1225,7 +1440,7 @@ abstract class Atomic extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass [ignoreImpossibleCheck] if you want to skip that
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
   /// requirement.
   factory Atomic.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Atomic(
@@ -1445,7 +1660,7 @@ abstract class Crazyhouse extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass [ignoreImpossibleCheck] if you want to skip that
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
   /// requirement.
   factory Crazyhouse.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Crazyhouse(
@@ -1533,6 +1748,245 @@ abstract class Crazyhouse extends Position {
   }
 }
 
+/// The rules for Chess♯ can be found at
+/// https://chess-sharp.games/ChessSharp_Rules.pdf
+@immutable
+abstract class ChessSharp extends Position {
+  @override
+  Rule get rule => Rule.chessSharp;
+
+  /// Creates a new [ChessSharp] position.
+  const factory ChessSharp({
+    required Board board,
+    Pockets? pockets,
+    required Side turn,
+    required Castles castles,
+    Square? epSquare,
+    required int halfmoves,
+    required int fullmoves,
+  }) = _ChessSharp;
+
+  const ChessSharp._({
+    required super.board,
+    super.pockets,
+    required super.turn,
+    required super.castles,
+    super.epSquare,
+    required super.halfmoves,
+    required super.fullmoves,
+  });
+
+  /// Sets up a playable [ChessSharp] position.
+  ///
+  /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
+  /// requirements.
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
+  /// requirement.
+  factory ChessSharp.fromSetup(Setup setup) {
+    final pos = ChessSharp(
+      board: setup.board,
+      pockets: setup.pockets ?? Pockets.empty,
+      turn: setup.turn,
+      castles: Castles.empty,
+      halfmoves: setup.halfmoves,
+      fullmoves: setup.fullmoves,
+    );
+    pos.validate();
+    return pos;
+  }
+
+  static const initial = ChessSharp(
+    board: Board.chessSharp,
+    pockets: Pockets.chessSharp,
+    turn: Side.white,
+    castles: Castles.empty,
+    halfmoves: 0,
+    fullmoves: 1,
+  );
+
+  static const chessFlat = ChessSharp(
+    board: Board.chessSharp,
+    pockets: Pockets.chessFlat,
+    turn: Side.white,
+    castles: Castles.empty,
+    halfmoves: 0,
+    fullmoves: 1,
+  );
+
+  static const chessDoubleSharp = ChessSharp(
+    board: Board.chessSharp,
+    pockets: Pockets.chessDoubleSharp,
+    turn: Side.white,
+    castles: Castles.empty,
+    halfmoves: 0,
+    fullmoves: 1,
+  );
+
+  static const chessDoubleFlat = ChessSharp(
+    board: Board.chessSharp,
+    pockets: Pockets.chessDoubleFlat,
+    turn: Side.white,
+    castles: Castles.empty,
+    halfmoves: 0,
+    fullmoves: 1,
+  );
+
+  static const chessTripleFlat = ChessSharp(
+    board: Board.chessSharp,
+    pockets: Pockets.chessTripleFlat,
+    turn: Side.white,
+    castles: Castles.empty,
+    halfmoves: 0,
+    fullmoves: 1,
+  );
+
+  // Chess♯ doesn't have check
+  @override
+  bool get isCheck => false;
+
+  // Chess♯ doesn't have checkmate
+  @override
+  bool get isCheckmate => false;
+
+  @override
+  bool isLegal(Move move) {
+    if (move is NormalMove) {
+      // In Chess♯, pieces on the board cannot move until the king has been placed
+      if (!kingOnBoard) {
+        return false;
+      }
+      // In Chess♯, pawns may only promote to queens
+      if (move.promotion != null && move.promotion != Role.queen) {
+        return false;
+      }
+    } else if (move is DropMove) {
+      // If there's only two open placement squares and the king is in the
+      // pocket, it must be placed. (Because if you waited to place when there
+      // was only one open square, your opponent could take that square on their
+      // turn leaving you with no place to put your king... which would cause
+      // the game to hang.)
+      // Over-the-board, the player with a king in their pocket and no place
+      // to put it will just pass their turn until an open square becomes
+      // available. But that requires too much programming to implement
+      // here... for a situation that has no redeeming features. So instead we
+      // lock the other pieces in the pocket until the king is placed.
+      if (openPlacementSquares < 3 &&
+          pockets!.of(turn, Role.king) > 0 &&
+          move.role != Role.king) {
+        return false;
+      }
+
+      // In Chess♯, a queen cannot be placed unless she is the last piece in your pocket
+      if (move.role == Role.queen && !onlyQueensInPocket) {
+        return false;
+      }
+    }
+    return super.isLegal(move);
+  }
+
+  @override
+  Outcome? get variantOutcome {
+    // Chess♯ ends when one side has lost its king
+    for (final color in Side.values) {
+      if (board.piecesOf(color, Role.king).isEmpty &&
+          pockets!.of(color, Role.king) < 1) {
+        return Outcome(winner: color.opposite, endType: EndType.decisive);
+      }
+    }
+
+    // Chess♯ stalemates are partial victories
+    if (isStalemate) {
+      return Outcome(winner: turn.opposite, endType: EndType.stalemate);
+    }
+
+    if (isImpasse || isInsufficientMaterial) {
+      if (materialDiff > 0) {
+        return Outcome.impasseWhiteMoreMaterial;
+      } else if (materialDiff < 0) {
+        return Outcome.impasseBlackMoreMaterial;
+      }
+      return Outcome.impasseEqualMaterial;
+    }
+    return null;
+  }
+
+  @override
+  bool get isVariantEnd => (board.kings.size + pockets!.count(Role.king)) < 2;
+
+  @override
+  void validate({bool? ignoreImpossibleCheck}) {
+    if (board.occupied.isEmpty) {
+      throw PositionSetupException.empty;
+    }
+    if (SquareSet.backranks.isIntersected(board.pawns)) {
+      throw PositionSetupException.pawnsOnBackrank;
+    }
+    if (pockets == null) {
+      throw PositionSetupException.variant;
+    } else {
+      // > 2 kings on the board+pocket
+      if ((board.kings.size +
+              pockets!.of(Side.white, Role.king) +
+              pockets!.of(Side.black, Role.king)) >
+          2) {
+        throw PositionSetupException.variant;
+      }
+
+      // Chess♯ requires the king to be placed before pieces on the board move
+      // White piece(s) have moved into rows 3-8, but the king is still in the pocket
+      if ((pockets!.of(Side.white, Role.king) > 0) &&
+          (board.white.intersect(SquareSet.ranksThreeToEight).isNotEmpty)) {
+        throw PositionSetupException.variant;
+      }
+      // Black piece(s) have moved into rows 1-6, but the king is still in the pocket
+      if ((pockets!.of(Side.black, Role.king) > 0) &&
+          (board.black.intersect(SquareSet.ranksOneToSix).isNotEmpty)) {
+        throw PositionSetupException.variant;
+      }
+    }
+  }
+
+  @override
+  bool hasInsufficientMaterial(Side side) {
+    if (checkers.isNotEmpty) return false;
+    if (checkersOnThem.isNotEmpty) return false;
+    if (pockets == null) {
+      return super.hasInsufficientMaterial(side);
+    }
+    return board.occupied.size + pockets!.size <= 3 &&
+        board.pawns.isEmpty &&
+        board.promoted.isEmpty &&
+        board.rooksAndQueens.isEmpty &&
+        pockets!.count(Role.pawn) <= 0 &&
+        pockets!.count(Role.rook) <= 0 &&
+        pockets!.count(Role.queen) <= 0;
+  }
+
+  @override
+  SquareSet get legalDrops {
+    final mask = board.occupied.complement().intersect(turn == Side.white
+        ? const SquareSet.fromRank(Rank(0))
+        : const SquareSet.fromRank(Rank(7)));
+
+    return mask;
+  }
+
+  /// Returns the SAN of this [Move] and the updated [Position].
+  ///
+  /// Throws a [PlayException] if the move is not legal.
+  @override
+  (Position, String) makeSan(Move move) {
+    // Chess♯ notation does not use check (+) or checkmate (#) symbols
+    final san = _makeSanWithoutSuffix(move);
+    final newPos = playUnchecked(move);
+    if (isLegal(move)) {
+      return (newPos, san);
+    } else {
+      throw PlayException('Invalid move $move on position $fen');
+    }
+  }
+}
+
 /// A variant similar to standard chess, where you win by putting your king on the center
 /// of the board.
 @immutable
@@ -1565,7 +2019,7 @@ abstract class KingOfTheHill extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass [ignoreImpossibleCheck] if you want to skip that
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
   /// requirement.
   factory KingOfTheHill.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = KingOfTheHill(
@@ -1641,7 +2095,7 @@ abstract class ThreeCheck extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass a `ignoreImpossibleCheck` boolean if you want to skip that
+  /// Optionally pass a `ignoreImpossibleCheck` boolean if you want to skip that
   /// requirement.
   factory ThreeCheck.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     if (setup.remainingChecks == null) {
@@ -1754,7 +2208,7 @@ abstract class RacingKings extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass [ignoreImpossibleCheck] if you want to skip that
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
   /// requirement.
   factory RacingKings.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = RacingKings(
@@ -1874,7 +2328,7 @@ abstract class Horde extends Position {
   ///
   /// Throws a [PositionSetupException] if the [Setup] does not meet basic validity
   /// requirements.
-  /// Optionnaly pass [ignoreImpossibleCheck] if you want to skip that
+  /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
   /// requirement.
   factory Horde.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Horde(
@@ -2164,16 +2618,60 @@ abstract class Horde extends Position {
   bool get isVariantEnd => board.white.isEmpty;
 }
 
+enum EndType {
+  decisive,
+  stalemate,
+  impasse,
+  impasseMoreMaterial,
+}
+
 /// The outcome of a [Position]. No [winner] means a draw.
 @immutable
 class Outcome {
-  const Outcome({this.winner});
+  const Outcome({this.winner, this.endType});
 
   final Side? winner;
+  final EndType? endType;
 
-  static const whiteWins = Outcome(winner: Side.white);
-  static const blackWins = Outcome(winner: Side.black);
-  static const draw = Outcome();
+  static const whiteWins =
+      Outcome(winner: Side.white, endType: EndType.decisive);
+  static const blackWins =
+      Outcome(winner: Side.black, endType: EndType.decisive);
+  static const stalemate = Outcome(endType: EndType.stalemate);
+  static const draw = Outcome(endType: EndType.impasse);
+
+  static const whiteStalemates =
+      Outcome(winner: Side.white, endType: EndType.stalemate);
+  static const impasseWhiteMoreMaterial =
+      Outcome(winner: Side.white, endType: EndType.impasseMoreMaterial);
+  static const impasseEqualMaterial =
+      Outcome(winner: Side.black, endType: EndType.impasse);
+  static const impasseBlackMoreMaterial =
+      Outcome(winner: Side.black, endType: EndType.impasseMoreMaterial);
+  static const blackStalemates =
+      Outcome(winner: Side.black, endType: EndType.stalemate);
+
+  int? scoreChessSharp(Side side) {
+    if (winner == side && endType == EndType.decisive) {
+      return 10;
+    } else if (winner == side && endType == EndType.stalemate) {
+      return 8;
+    } else if (winner == side && endType == EndType.impasseMoreMaterial) {
+      return 7;
+    } else if (side == Side.black && endType == EndType.impasse) {
+      return 6;
+    } else if (side == Side.white && endType == EndType.impasse) {
+      return 4;
+    } else if (winner == side.opposite &&
+        endType == EndType.impasseMoreMaterial) {
+      return 3;
+    } else if (winner == side.opposite && endType == EndType.stalemate) {
+      return 2;
+    } else if (winner == side.opposite && endType == EndType.decisive) {
+      return 0;
+    }
+    return null;
+  }
 
   @override
   String toString() {
@@ -2189,7 +2687,23 @@ class Outcome {
 
   /// Create [Outcome] from string
   static Outcome? fromPgn(String? outcome) {
-    if (outcome == '1/2-1/2') {
+    final a = outcome?.replaceAll('–', '-');
+    // Chess♯ uses a ten point scale
+    if (a == '10-0') {
+      return Outcome.whiteWins;
+    } else if (a == '8-2') {
+      return Outcome.whiteStalemates;
+    } else if (a == '7-3') {
+      return Outcome.impasseWhiteMoreMaterial;
+    } else if (a == '4-6') {
+      return Outcome.impasseEqualMaterial;
+    } else if (a == '3-7') {
+      return Outcome.impasseBlackMoreMaterial;
+    } else if (a == '2-8') {
+      return Outcome.blackStalemates;
+    } else if (a == '0-10') {
+      return Outcome.blackWins;
+    } else if (outcome == '1/2-1/2') {
       return Outcome.draw;
     } else if (outcome == '1-0') {
       return Outcome.whiteWins;
@@ -2211,6 +2725,40 @@ class Outcome {
     } else {
       return '1/2-1/2';
     }
+  }
+
+  /// Create a Chess♯ PGN String out of [Outcome]
+  static String toPgnStringChessSharp(Outcome? outcome) {
+    if (outcome == null) {
+      return '*';
+    }
+    return '${chessSharpSideScore(outcome, Side.white)}–${chessSharpSideScore(outcome, Side.black)}';
+  }
+
+  static int chessSharpSideScore(Outcome outcome, Side side) {
+    if (outcome.winner == side && outcome.endType == EndType.decisive) {
+      return 10;
+    } else if (outcome.winner == side && outcome.endType == EndType.stalemate) {
+      return 8;
+    } else if (outcome.winner == side &&
+        outcome.endType == EndType.impasseMoreMaterial) {
+      return 7;
+    } else if (outcome.winner == side && outcome.endType == EndType.impasse) {
+      return 6;
+    } else if (outcome.winner == side.opposite &&
+        outcome.endType == EndType.decisive) {
+      return 0;
+    } else if (outcome.winner == side.opposite &&
+        outcome.endType == EndType.stalemate) {
+      return 2;
+    } else if (outcome.winner == side.opposite &&
+        outcome.endType == EndType.impasseMoreMaterial) {
+      return 3;
+    } else if (outcome.winner == side.opposite &&
+        outcome.endType == EndType.impasse) {
+      return 4;
+    }
+    return 0;
   }
 }
 
@@ -2434,6 +2982,43 @@ class _Crazyhouse extends Crazyhouse {
     (int, int)? remainingChecks,
   }) {
     return Crazyhouse(
+      board: board ?? this.board,
+      pockets:
+          pockets == _uniqueObjectInstance ? this.pockets : pockets as Pockets?,
+      turn: turn ?? this.turn,
+      castles: castles ?? this.castles,
+      epSquare: epSquare == _uniqueObjectInstance
+          ? this.epSquare
+          : epSquare as Square?,
+      halfmoves: halfmoves ?? this.halfmoves,
+      fullmoves: fullmoves ?? this.fullmoves,
+    );
+  }
+}
+
+class _ChessSharp extends ChessSharp {
+  const _ChessSharp({
+    required super.board,
+    super.pockets,
+    required super.turn,
+    required super.castles,
+    super.epSquare,
+    required super.halfmoves,
+    required super.fullmoves,
+  }) : super._();
+
+  @override
+  ChessSharp copyWith({
+    Board? board,
+    Object? pockets = _uniqueObjectInstance,
+    Side? turn,
+    Castles? castles,
+    Object? epSquare = _uniqueObjectInstance,
+    int? halfmoves,
+    int? fullmoves,
+    (int, int)? remainingChecks,
+  }) {
+    return ChessSharp(
       board: board ?? this.board,
       pockets:
           pockets == _uniqueObjectInstance ? this.pockets : pockets as Pockets?,

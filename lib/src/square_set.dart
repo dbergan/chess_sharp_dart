@@ -44,6 +44,8 @@ extension type const SquareSet(int value) {
   static const eighthRank = SquareSet(0xff00000000000000);
   static const aFile = SquareSet(0x0101010101010101);
   static const hFile = SquareSet(0x8080808080808080);
+  static const ranksThreeToEight = SquareSet(0xffffffffffff0000);
+  static const ranksOneToSix = SquareSet(0xffffffffffff);
 
   /// Bitwise right shift
   SquareSet shr(int shift) {

@@ -1,4 +1,4 @@
-import 'package:dartchess/dartchess.dart';
+import 'package:chess_sharp_dart/dartchess.dart';
 
 void main() {
   // Parse fen and create a valid chess position
