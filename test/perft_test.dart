@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'dart:io' as io;
-import 'package:chess_sharp_dart/dartchess.dart';
+import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 import 'perft_parser.dart';
 
 const nodeLimit = 10000000;

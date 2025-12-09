@@ -1,4 +1,4 @@
-import 'package:chess_sharp_dart/dartchess.dart';
+import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:test/test.dart';
 

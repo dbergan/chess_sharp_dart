@@ -1,4 +1,4 @@
-import 'package:chess_sharp_dart/dartchess.dart' hide File;
+import 'package:chess_sharp_dart/chess_sharp_dart.dart' hide File;
 import 'package:test/test.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'dart:io';

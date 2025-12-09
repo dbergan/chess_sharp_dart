@@ -1,5 +1,5 @@
 import 'package:benchmark/benchmark.dart';
-import 'package:chess_sharp_dart/dartchess.dart';
+import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 import 'dart:io' as io;
 
 void main() {

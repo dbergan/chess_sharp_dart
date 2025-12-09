@@ -1,4 +1,4 @@
-import 'package:chess_sharp_dart/dartchess.dart';
+import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 
 void main() {
   final stopwatch = Stopwatch()..start();

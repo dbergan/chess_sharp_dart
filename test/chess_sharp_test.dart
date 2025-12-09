@@ -1,6 +1,6 @@
 import 'dart:io' as io;
 
-import 'package:chess_sharp_dart/dartchess.dart';
+import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 import 'package:test/test.dart';
 import 'db_testing_lib.dart';
 

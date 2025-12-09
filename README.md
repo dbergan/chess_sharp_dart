@@ -6,7 +6,7 @@ https://chess-sharp.games/ChessSharp_Rules.pdf
 ## Usage
 
 ```dart
-import 'package:chess_sharp_dart/dartchess.dart';
+import 'package:chess_sharp_dart/chess_sharp_dart.dart';
 ```
 
 ## Additional information
