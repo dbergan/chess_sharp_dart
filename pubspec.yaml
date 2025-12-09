@@ -1,7 +1,7 @@
 name: chess_sharp_dart
 description: Forked from dartchess (by lichess) version 0.11.1 on 2025-12-09 to include the Chess♯ family of variants
 repository: https://github.com/dbergan/chess_sharp_dart
-version: 0.1.0
+version: 0.1.1
 homepage: https://chess-sharp.games/
 platforms:
   android:
