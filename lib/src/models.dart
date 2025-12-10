@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import './square_set.dart';
+
+import 'square_set.dart';
 
 /// The chessboard side, white or black.
 enum Side {
@@ -318,9 +319,11 @@ extension type const Square._(int value) implements int {
   Square? offset(int delta) {
     assert(delta >= -63 && delta <= 63);
     final newSquare = value + delta;
-    if (newSquare < 0 || newSquare > 63) {
-      return null;
-    }
+    if (newSquare < 0 || newSquare > 63) return null;
+    final oldFile = file.value;
+    final newFile = newSquare & 0x7;
+    // Prevent wrapping across files: allow up to 2-file shifts (for knight moves).
+    if ((newFile - oldFile).abs() > 2) return null;
     return Square(newSquare);
   }
 

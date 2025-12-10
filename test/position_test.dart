@@ -92,7 +92,7 @@ void main() {
     });
 
     test('parse basic san', () {
-      const position = Chess.initial;
+      final position = Chess.initial;
       expect(position.parseSan('e4'),
           equals(const NormalMove(from: Square.e2, to: Square.e4)));
       expect(position.parseSan('Nf3'),
@@ -133,7 +133,7 @@ void main() {
 
     test('cannot parse drop moves in Chess', () {
       const illegalMoves = ['Q@e3', 'N@d4'];
-      const position = Chess.initial;
+      final position = Chess.initial;
       for (final move in illegalMoves) {
         expect(position.parseSan(move), equals(null));
       }
@@ -185,7 +185,7 @@ void main() {
         'h5',
         'h?1',
       ];
-      const position = Chess.initial;
+      final position = Chess.initial;
       for (final san in legalSans) {
         expect(position.parseSan(san) != null, true);
       }
@@ -213,7 +213,7 @@ void main() {
         'Ng1',
       ];
 
-      const position = Chess.initial;
+      final position = Chess.initial;
       for (final san in legalSans) {
         expect(position.parseSan(san) != null, true);
       }
@@ -224,7 +224,7 @@ void main() {
     });
 
     test('overspecified pawn move', () {
-      const position = Chess.initial;
+      final position = Chess.initial;
       expect(position.parseSan('2e4'),
           equals(const NormalMove(from: Square.e2, to: Square.e4)));
     });
@@ -362,21 +362,21 @@ void main() {
     test('standard position legal moves', () {
       final moves = IMap({
         Square.a1: SquareSet.empty,
-        Square.b1: const SquareSet.fromSquare(Square.a3).withSquare(Square.c3),
+        Square.b1: SquareSet.fromSquare(Square.a3).withSquare(Square.c3),
         Square.c1: SquareSet.empty,
         Square.d1: SquareSet.empty,
         Square.e1: SquareSet.empty,
         Square.f1: SquareSet.empty,
-        Square.g1: const SquareSet.fromSquare(Square.f3).withSquare(Square.h3),
+        Square.g1: SquareSet.fromSquare(Square.f3).withSquare(Square.h3),
         Square.h1: SquareSet.empty,
-        Square.a2: const SquareSet.fromSquare(Square.a3).withSquare(Square.a4),
-        Square.b2: const SquareSet.fromSquare(Square.b3).withSquare(Square.b4),
-        Square.c2: const SquareSet.fromSquare(Square.c3).withSquare(Square.c4),
-        Square.d2: const SquareSet.fromSquare(Square.d3).withSquare(Square.d4),
-        Square.e2: const SquareSet.fromSquare(Square.e3).withSquare(Square.e4),
-        Square.f2: const SquareSet.fromSquare(Square.f3).withSquare(Square.f4),
-        Square.g2: const SquareSet.fromSquare(Square.g3).withSquare(Square.g4),
-        Square.h2: const SquareSet.fromSquare(Square.h3).withSquare(Square.h4),
+        Square.a2: SquareSet.fromSquare(Square.a3).withSquare(Square.a4),
+        Square.b2: SquareSet.fromSquare(Square.b3).withSquare(Square.b4),
+        Square.c2: SquareSet.fromSquare(Square.c3).withSquare(Square.c4),
+        Square.d2: SquareSet.fromSquare(Square.d3).withSquare(Square.d4),
+        Square.e2: SquareSet.fromSquare(Square.e3).withSquare(Square.e4),
+        Square.f2: SquareSet.fromSquare(Square.f3).withSquare(Square.f4),
+        Square.g2: SquareSet.fromSquare(Square.g3).withSquare(Square.g4),
+        Square.h2: SquareSet.fromSquare(Square.h3).withSquare(Square.h4),
       });
       expect(Chess.initial.legalMoves, equals(moves));
     });
@@ -394,7 +394,8 @@ void main() {
     test('castling legal moves', () {
       final pos = Chess.fromSetup(Setup.parseFen(
           'r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1'));
-      expect(pos.legalMovesOf(Square.e1), const SquareSet(0x00000000000000A9));
+      expect(pos.legalMovesOf(Square.e1),
+          SquareSet(BigInt.parse('00000000000000A9', radix: 16)));
     });
 
     test('castling chess960 legal moves', () {
@@ -710,7 +711,7 @@ void main() {
         expect(pos.board.pieceAt(Square.f1), Piece.whiteRook);
         expect(
             pos.castles.castlingRights
-                .isIntersected(const SquareSet.fromRank(Rank.first)),
+                .isIntersected(SquareSet.fromRank(Rank.first)),
             false);
         expect(pos.castles.rookOf(Side.white, CastlingSide.king), isNull);
         expect(pos.castles.rookOf(Side.white, CastlingSide.queen), isNull);
@@ -1051,7 +1052,7 @@ void main() {
 
   group('Racing Kings', () {
     test('start position', () {
-      const position = RacingKings.initial;
+      final position = RacingKings.initial;
       expect(position.fen, equals('8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1'));
     });
 

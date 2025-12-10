@@ -1,9 +1,10 @@
 import 'package:meta/meta.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'dart:math' as math;
-import './square_set.dart';
-import './models.dart';
-import './board.dart';
+
+import 'square_set.dart';
+import 'models.dart';
+import 'board.dart';
 
 /// A not necessarily legal position.
 @immutable
@@ -166,7 +167,7 @@ class Setup {
   final (int, int)? remainingChecks;
 
   /// Initial position setup.
-  static const standard = Setup(
+  static final standard = Setup(
     board: Board.standard,
     turn: Side.white,
     castlingRights: SquareSet.corners,

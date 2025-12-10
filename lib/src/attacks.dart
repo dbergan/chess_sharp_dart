@@ -1,5 +1,5 @@
-import './square_set.dart';
-import './models.dart';
+import 'square_set.dart';
+import 'models.dart';
 
 /// Gets squares attacked or defended by a king on [Square].
 SquareSet kingAttacks(Square square) {
@@ -19,15 +19,13 @@ SquareSet pawnAttacks(Side side, Square square) {
 /// Gets squares attacked or defended by a bishop on [Square], given `occupied`
 /// squares.
 SquareSet bishopAttacks(Square square, SquareSet occupied) {
-  final bit = SquareSet.fromSquare(square);
-  return _hyperbola(bit, _diagRange[square], occupied) ^
-      _hyperbola(bit, _antiDiagRange[square], occupied);
+  return _slidingAttacks(square, occupied, [-9, -7, 7, 9]);
 }
 
 /// Gets squares attacked or defended by a rook on [Square], given `occupied`
 /// squares.
 SquareSet rookAttacks(Square square, SquareSet occupied) {
-  return _fileAttacks(square, occupied) ^ _rankAttacks(square, occupied);
+  return _slidingAttacks(square, occupied, [-8, -1, 1, 8]);
 }
 
 /// Gets squares attacked or defended by a queen on [Square], given `occupied`
@@ -128,24 +126,17 @@ final _antiDiagRange = _tabulate((sq) {
       .withoutSquare(sq);
 });
 
-SquareSet _hyperbola(SquareSet bit, SquareSet range, SquareSet occupied) {
-  SquareSet forward = occupied & range;
-  SquareSet reverse =
-      forward.flipVertical(); // Assumes no more than 1 bit per rank
-  forward = forward - bit;
-  reverse = reverse - bit.flipVertical();
-  return (forward ^ reverse.flipVertical()) & range;
-}
-
-SquareSet _fileAttacks(Square square, SquareSet occupied) =>
-    _hyperbola(SquareSet.fromSquare(square), _fileRange[square], occupied);
-
-SquareSet _rankAttacks(Square square, SquareSet occupied) {
-  final range = _rankRange[square];
-  final bit = SquareSet.fromSquare(square);
-  SquareSet forward = occupied & range;
-  SquareSet reverse = forward.mirrorHorizontal();
-  forward = forward - bit;
-  reverse = reverse - bit.mirrorHorizontal();
-  return (forward ^ reverse.mirrorHorizontal()) & range;
+SquareSet _slidingAttacks(Square square, SquareSet occupied, List<int> deltas) {
+  var attacks = SquareSet.empty;
+  for (final delta in deltas) {
+    var cur = square;
+    while (true) {
+      final next = cur.offset(delta);
+      if (next == null) break;
+      attacks = attacks.withSquare(next);
+      if (occupied.has(next)) break;
+      cur = next;
+    }
+  }
+  return attacks;
 }

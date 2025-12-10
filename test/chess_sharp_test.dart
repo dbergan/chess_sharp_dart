@@ -80,7 +80,7 @@ void main() {
     expect(ChessSharp.initial.fen, loadedPosition.fen);
   });
   test('Chess♯ - kingCount', () {
-    const ChessSharp a = ChessSharp.initial;
+    final ChessSharp a = ChessSharp.initial;
     expect(a.board.kings.size, 0);
     expect(a.pockets!.of(Side.white, Role.king), 1);
     expect(a.pockets!.of(Side.black, Role.king), 1);

@@ -1,63 +1,73 @@
-import './models.dart';
+import 'models.dart';
 
 /// A finite set of all squares on a chessboard.
 ///
-/// All the squares are represented by a single 64-bit integer, where each bit
-/// corresponds to a square, using a little-endian rank-file mapping.
+/// All the squares are represented by a single 64-bit integer (BigInt on web),
+/// where each bit corresponds to a square, using a little-endian rank-file mapping.
 /// See also [Square].
 ///
 /// The set operations are implemented as bitwise operations on the integer.
-extension type const SquareSet(int value) {
+extension type const SquareSet(BigInt value) {
   /// Creates a [SquareSet] with a single [Square].
-  const SquareSet.fromSquare(Square square) : value = 1 << square;
+  SquareSet.fromSquare(Square square) : value = BigInt.one << square;
 
   /// Creates a [SquareSet] from several [Square]s.
   SquareSet.fromSquares(Iterable<Square> squares)
       : value = squares
-            .map((square) => 1 << square)
-            .fold(0, (left, right) => left | right);
+            .map((square) => BigInt.one << square)
+            .fold(BigInt.zero, (left, right) => left | right);
 
   /// Create a [SquareSet] containing all squares of the given rank.
-  const SquareSet.fromRank(Rank rank)
-      : value = 0xff << (8 * rank),
+  SquareSet.fromRank(Rank rank)
+      : value = BigInt.parse('ff', radix: 16) << (8 * rank),
         assert(rank >= 0 && rank < 8);
 
   /// Create a [SquareSet] containing all squares of the given file.
-  const SquareSet.fromFile(File file)
-      : value = 0x0101010101010101 << file,
+  SquareSet.fromFile(File file)
+      : value = BigInt.parse('0101010101010101', radix: 16) << file,
         assert(file >= 0 && file < 8);
 
   /// Create a [SquareSet] containing all squares of the given backrank [Side].
-  const SquareSet.backrankOf(Side side)
-      : value = side == Side.white ? 0xff : 0xff00000000000000;
+  SquareSet.backrankOf(Side side)
+      : value = side == Side.white
+            ? BigInt.parse('ff', radix: 16)
+            : BigInt.parse('ff00000000000000', radix: 16);
 
-  static const empty = SquareSet(0);
-  static const full = SquareSet(0xffffffffffffffff);
-  static const lightSquares = SquareSet(0x55AA55AA55AA55AA);
-  static const darkSquares = SquareSet(0xAA55AA55AA55AA55);
-  static const diagonal = SquareSet(0x8040201008040201);
-  static const antidiagonal = SquareSet(0x0102040810204080);
-  static const corners = SquareSet(0x8100000000000081);
-  static const center = SquareSet(0x0000001818000000);
-  static const backranks = SquareSet(0xff000000000000ff);
-  static const firstRank = SquareSet(0xff);
-  static const eighthRank = SquareSet(0xff00000000000000);
-  static const aFile = SquareSet(0x0101010101010101);
-  static const hFile = SquareSet(0x8080808080808080);
-  static const ranksThreeToEight = SquareSet(0xffffffffffff0000);
-  static const ranksOneToSix = SquareSet(0xffffffffffff);
+  static final empty = SquareSet(BigInt.zero);
+  static final full = SquareSet(BigInt.parse('ffffffffffffffff', radix: 16));
+  static final lightSquares =
+      SquareSet(BigInt.parse('55AA55AA55AA55AA', radix: 16));
+  static final darkSquares =
+      SquareSet(BigInt.parse('AA55AA55AA55AA55', radix: 16));
+  static final diagonal =
+      SquareSet(BigInt.parse('8040201008040201', radix: 16));
+  static final antidiagonal =
+      SquareSet(BigInt.parse('0102040810204080', radix: 16));
+  static final corners = SquareSet(BigInt.parse('8100000000000081', radix: 16));
+  static final center = SquareSet(BigInt.parse('0000001818000000', radix: 16));
+  static final backranks =
+      SquareSet(BigInt.parse('ff000000000000ff', radix: 16));
+  static final firstRank = SquareSet(BigInt.parse('ff', radix: 16));
+  static final eighthRank =
+      SquareSet(BigInt.parse('ff00000000000000', radix: 16));
+  static final aFile = SquareSet(BigInt.parse('0101010101010101', radix: 16));
+  static final hFile = SquareSet(BigInt.parse('8080808080808080', radix: 16));
+  static final ranksThreeToEight =
+      SquareSet(BigInt.parse('ffffffffff0000', radix: 16));
+  static final ranksOneToSix =
+      SquareSet(BigInt.parse('ffffffffffff', radix: 16));
 
   /// Bitwise right shift
   SquareSet shr(int shift) {
     if (shift >= 64) return SquareSet.empty;
-    if (shift > 0) return SquareSet(value >>> shift);
+    if (shift > 0) return SquareSet(value >> shift);
     return this;
   }
 
   /// Bitwise left shift
   SquareSet shl(int shift) {
     if (shift >= 64) return SquareSet.empty;
-    if (shift > 0) return SquareSet(value << shift);
+    if (shift > 0) return SquareSet((value << shift) & full.value);
     return this;
   }
 
@@ -74,44 +84,44 @@ extension type const SquareSet(int value) {
   SquareSet operator &(SquareSet other) => SquareSet(value & other.value);
 
   /// Returns a new [SquareSet] with the [other] squares removed from this set.
-  SquareSet minus(SquareSet other) => SquareSet(value - other.value);
-  SquareSet operator -(SquareSet other) => SquareSet(value - other.value);
+  SquareSet minus(SquareSet other) => SquareSet(value & ~other.value);
+  SquareSet operator -(SquareSet other) => SquareSet(value & ~other.value);
 
   /// Returns the set complement of this set.
-  SquareSet complement() => SquareSet(~value);
+  SquareSet complement() => SquareSet((~value) & full.value);
 
   /// Returns the set difference of this set and [other].
   SquareSet diff(SquareSet other) => SquareSet(value & ~other.value);
 
   /// Flips the set vertically.
   SquareSet flipVertical() {
-    const k1 = 0x00FF00FF00FF00FF;
-    const k2 = 0x0000FFFF0000FFFF;
-    int x = ((value >>> 8) & k1) | ((value & k1) << 8);
-    x = ((x >>> 16) & k2) | ((x & k2) << 16);
-    x = (x >>> 32) | (x << 32);
-    return SquareSet(x);
+    final k1 = BigInt.parse('00FF00FF00FF00FF', radix: 16);
+    final k2 = BigInt.parse('0000FFFF0000FFFF', radix: 16);
+    var x = ((value >> 8) & k1) | ((value & k1) << 8);
+    x = ((x >> 16) & k2) | ((x & k2) << 16);
+    x = (x >> 32) | (x << 32);
+    return SquareSet(x & full.value);
   }
 
   /// Flips the set horizontally.
   SquareSet mirrorHorizontal() {
-    const k1 = 0x5555555555555555;
-    const k2 = 0x3333333333333333;
-    const k4 = 0x0f0f0f0f0f0f0f0f;
-    int x = ((value >>> 1) & k1) | ((value & k1) << 1);
-    x = ((x >>> 2) & k2) | ((x & k2) << 2);
-    x = ((x >>> 4) & k4) | ((x & k4) << 4);
-    return SquareSet(x);
+    final k1 = BigInt.parse('5555555555555555', radix: 16);
+    final k2 = BigInt.parse('3333333333333333', radix: 16);
+    final k4 = BigInt.parse('0f0f0f0f0f0f0f0f', radix: 16);
+    var x = ((value >> 1) & k1) | ((value & k1) << 1);
+    x = ((x >> 2) & k2) | ((x & k2) << 2);
+    x = ((x >> 4) & k4) | ((x & k4) << 4);
+    return SquareSet(x & full.value);
   }
 
   /// Returns the number of squares in the set.
   int get size => _popcnt64(value);
 
   /// Returns true if the set is empty.
-  bool get isEmpty => value == 0;
+  bool get isEmpty => value == BigInt.zero;
 
   /// Returns true if the set is not empty.
-  bool get isNotEmpty => value != 0;
+  bool get isNotEmpty => value != BigInt.zero;
 
   /// Returns the first square in the set, or null if the set is empty.
   Square? get first => _getFirstSquare(value);
@@ -133,7 +143,7 @@ extension type const SquareSet(int value) {
 
   /// Returns true if the [SquareSet] contains the given [square].
   bool has(Square square) {
-    return value & (1 << square) != 0;
+    return (value & (BigInt.one << square)) != BigInt.zero;
   }
 
   /// Returns true if the square set has any square in the [other] square set.
@@ -144,17 +154,17 @@ extension type const SquareSet(int value) {
 
   /// Returns a new [SquareSet] with the given [square] added.
   SquareSet withSquare(Square square) {
-    return SquareSet(value | (1 << square));
+    return SquareSet(value | (BigInt.one << square));
   }
 
   /// Returns a new [SquareSet] with the given [square] removed.
   SquareSet withoutSquare(Square square) {
-    return SquareSet(value & ~(1 << square));
+    return SquareSet(value & ~(BigInt.one << square));
   }
 
   /// Removes [Square] if present, or put it if absent.
   SquareSet toggleSquare(Square square) {
-    return SquareSet(value ^ (1 << square));
+    return SquareSet(value ^ (BigInt.one << square));
   }
 
   /// Returns a new [SquareSet] with its first [Square] removed.
@@ -165,84 +175,68 @@ extension type const SquareSet(int value) {
 
   /// Returns the hexadecimal string representation of the bitboard value.
   String toHexString() {
-    final buffer = StringBuffer();
-    for (int square = 63; square >= 0; square--) {
-      buffer.write(has(Square(square)) ? '1' : '0');
-    }
-    final b = buffer.toString();
-    final first = int.parse(b.substring(0, 32), radix: 2)
-        .toRadixString(16)
-        .toUpperCase()
-        .padLeft(8, '0');
-    final last = int.parse(b.substring(32, 64), radix: 2)
-        .toRadixString(16)
-        .toUpperCase()
-        .padLeft(8, '0');
-    final stringVal = '$first$last';
-    if (stringVal == '0000000000000000') {
-      return '0';
-    }
-    return '0x$first$last';
+    if (value == BigInt.zero) return '0';
+    return '0x${value.toRadixString(16).toUpperCase().padLeft(16, '0')}';
   }
 
   Iterable<Square> _iterateSquares() sync* {
-    int bitboard = value;
-    while (bitboard != 0) {
+    var bitboard = value;
+    while (bitboard != BigInt.zero) {
       final square = _getFirstSquare(bitboard);
-      bitboard ^= 1 << square!;
+      bitboard ^= BigInt.one << square!;
       yield square;
     }
   }
 
   Iterable<Square> _iterateSquaresReversed() sync* {
-    int bitboard = value;
-    while (bitboard != 0) {
+    var bitboard = value;
+    while (bitboard != BigInt.zero) {
       final square = _getLastSquare(bitboard);
-      bitboard ^= 1 << square!;
+      bitboard ^= BigInt.one << square!;
       yield square;
     }
   }
 
-  Square? _getFirstSquare(int bitboard) {
+  Square? _getFirstSquare(BigInt bitboard) {
     final ntz = _ntz64(bitboard);
     return ntz >= 0 && ntz < 64 ? Square(ntz) : null;
   }
 
-  Square? _getLastSquare(int bitboard) {
-    if (bitboard == 0) return null;
+  Square? _getLastSquare(BigInt bitboard) {
+    if (bitboard == BigInt.zero) return null;
     return Square(63 - _nlz64(bitboard));
   }
 }
 
-int _popcnt64(int n) {
-  final count2 = n - ((n >>> 1) & 0x5555555555555555);
-  final count4 =
-      (count2 & 0x3333333333333333) + ((count2 >>> 2) & 0x3333333333333333);
-  final count8 = (count4 + (count4 >>> 4)) & 0x0f0f0f0f0f0f0f0f;
-  return (count8 * 0x0101010101010101) >>> 56;
+int _popcnt64(BigInt n) {
+  var x = n & BigInt.parse('FFFFFFFFFFFFFFFF', radix: 16);
+  var count = 0;
+  while (x != BigInt.zero) {
+    x = x & (x - BigInt.one);
+    count++;
+  }
+  return count;
 }
 
-int _nlz64(int x) {
-  int r = x;
-  r |= r >>> 1;
-  r |= r >>> 2;
-  r |= r >>> 4;
-  r |= r >>> 8;
-  r |= r >>> 16;
-  r |= r >>> 32;
+int _nlz64(BigInt x) {
+  var r = x;
+  r |= r >> 1;
+  r |= r >> 2;
+  r |= r >> 4;
+  r |= r >> 8;
+  r |= r >> 16;
+  r |= r >> 32;
   return 64 - _popcnt64(r);
 }
 
-// from https://gist.github.com/jtmcdole/297434f327077dbfe5fb19da3b4ef5be
-int _ntz64(int x) => _ntzLut64[(x & -x) % 131];
-const _ntzLut64 = [
-  64, 0, 1, -1, 2, 46, -1, -1, 3, 14, 47, 56, -1, 18, -1, //
-  -1, 4, 43, 15, 35, 48, 38, 57, 23, -1, -1, 19, -1, -1, 51,
-  -1, 29, 5, 63, 44, 12, 16, 41, 36, -1, 49, -1, 39, -1, 58,
-  60, 24, -1, -1, 62, -1, -1, 20, 26, -1, -1, -1, -1, 52, -1,
-  -1, -1, 30, -1, 6, -1, -1, -1, 45, -1, 13, 55, 17, -1, 42,
-  34, 37, 22, -1, -1, 50, 28, -1, 11, 40, -1, -1, -1, 59,
-  -1, 61, -1, 25, -1, -1, -1, -1, -1, -1, -1, -1, 54, -1,
-  33, 21, -1, 27, 10, -1, -1, -1, -1, -1, -1, -1, -1, 53,
-  32, -1, 9, -1, -1, -1, -1, 31, 8, -1, -1, 7, -1, -1,
-];
+int _ntz64(BigInt x) {
+  if (x == BigInt.zero) return 64;
+  // Simple, reliable trailing-zero count for BigInt within 64 bits.
+  var v = x;
+  var count = 0;
+  while ((v & BigInt.one) == BigInt.zero) {
+    count++;
+    v = v >> 1;
+  }
+  return count;
+}

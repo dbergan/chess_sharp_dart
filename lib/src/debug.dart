@@ -1,8 +1,8 @@
-import './board.dart';
-import './models.dart';
-import './position.dart';
-import './square_set.dart';
-import './setup.dart';
+import 'board.dart';
+import 'models.dart';
+import 'position.dart';
+import 'square_set.dart';
+import 'setup.dart';
 
 /// Takes a string and returns a SquareSet. Useful for debugging/testing purposes.
 ///
@@ -19,7 +19,7 @@ import './setup.dart';
 /// . 1 . . 1 . . .
 /// '''
 /// final squareSet = makeSquareSet(str);
-/// // SquareSet(0x0E0A12221E222212)
+/// // SquareSet(BigInt.parse('0E0A12221E222212', radix: 16))
 /// ```
 SquareSet makeSquareSet(String rep) {
   SquareSet ret = SquareSet.empty;

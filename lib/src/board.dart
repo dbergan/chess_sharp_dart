@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-import './square_set.dart';
-import './models.dart';
-import './attacks.dart';
+
+import 'square_set.dart';
+import 'models.dart';
+import 'attacks.dart';
 
 /// A board represented by several square sets for each piece.
 @immutable
@@ -53,52 +54,52 @@ class Board {
   final SquareSet kings;
 
   /// Standard chess starting position.
-  static const standard = Board(
-    occupied: SquareSet(0xffff00000000ffff),
+  static final standard = Board(
+    occupied: SquareSet(BigInt.parse('ffff00000000ffff', radix: 16)),
     promoted: SquareSet.empty,
-    white: SquareSet(0xffff),
-    black: SquareSet(0xffff000000000000),
-    pawns: SquareSet(0x00ff00000000ff00),
-    knights: SquareSet(0x4200000000000042),
-    bishops: SquareSet(0x2400000000000024),
+    white: SquareSet(BigInt.parse('ffff', radix: 16)),
+    black: SquareSet(BigInt.parse('ffff000000000000', radix: 16)),
+    pawns: SquareSet(BigInt.parse('00ff00000000ff00', radix: 16)),
+    knights: SquareSet(BigInt.parse('4200000000000042', radix: 16)),
+    bishops: SquareSet(BigInt.parse('2400000000000024', radix: 16)),
     rooks: SquareSet.corners,
-    queens: SquareSet(0x0800000000000008),
-    kings: SquareSet(0x1000000000000010),
+    queens: SquareSet(BigInt.parse('0800000000000008', radix: 16)),
+    kings: SquareSet(BigInt.parse('1000000000000010', radix: 16)),
   );
 
   /// Racing Kings start position
-  static const racingKings = Board(
-      occupied: SquareSet(0xffff),
+  static final racingKings = Board(
+      occupied: SquareSet(BigInt.parse('ffff', radix: 16)),
       promoted: SquareSet.empty,
-      white: SquareSet(0xf0f0),
-      black: SquareSet(0x0f0f),
+      white: SquareSet(BigInt.parse('f0f0', radix: 16)),
+      black: SquareSet(BigInt.parse('0f0f', radix: 16)),
       pawns: SquareSet.empty,
-      knights: SquareSet(0x1818),
-      bishops: SquareSet(0x2424),
-      rooks: SquareSet(0x4242),
-      queens: SquareSet(0x0081),
-      kings: SquareSet(0x8100));
+      knights: SquareSet(BigInt.parse('1818', radix: 16)),
+      bishops: SquareSet(BigInt.parse('2424', radix: 16)),
+      rooks: SquareSet(BigInt.parse('4242', radix: 16)),
+      queens: SquareSet(BigInt.parse('0081', radix: 16)),
+      kings: SquareSet(BigInt.parse('8100', radix: 16)));
 
   /// Horde start Position
-  static const horde = Board(
-    occupied: SquareSet(0xffff0066ffffffff),
+  static final horde = Board(
+    occupied: SquareSet(BigInt.parse('ffff0066ffffffff', radix: 16)),
     promoted: SquareSet.empty,
-    white: SquareSet(0x00000066ffffffff),
-    black: SquareSet(0xffff000000000000),
-    pawns: SquareSet(0x00ff0066ffffffff),
-    knights: SquareSet(0x4200000000000000),
-    bishops: SquareSet(0x2400000000000000),
-    rooks: SquareSet(0x8100000000000000),
-    queens: SquareSet(0x0800000000000000),
-    kings: SquareSet(0x1000000000000000),
+    white: SquareSet(BigInt.parse('00000066ffffffff', radix: 16)),
+    black: SquareSet(BigInt.parse('ffff000000000000', radix: 16)),
+    pawns: SquareSet(BigInt.parse('00ff0066ffffffff', radix: 16)),
+    knights: SquareSet(BigInt.parse('4200000000000000', radix: 16)),
+    bishops: SquareSet(BigInt.parse('2400000000000000', radix: 16)),
+    rooks: SquareSet(BigInt.parse('8100000000000000', radix: 16)),
+    queens: SquareSet(BigInt.parse('0800000000000000', radix: 16)),
+    kings: SquareSet(BigInt.parse('1000000000000000', radix: 16)),
   );
 
-  static const chessSharp = Board(
-    occupied: SquareSet(0x00ff00000000ff00),
+  static final chessSharp = Board(
+    occupied: SquareSet(BigInt.parse('00ff00000000ff00', radix: 16)),
     promoted: SquareSet.empty,
-    white: SquareSet(0x000000000000ff00),
-    black: SquareSet(0x00ff000000000000),
-    pawns: SquareSet(0x00ff00000000ff00),
+    white: SquareSet(BigInt.parse('000000000000ff00', radix: 16)),
+    black: SquareSet(BigInt.parse('00ff000000000000', radix: 16)),
+    pawns: SquareSet(BigInt.parse('00ff00000000ff00', radix: 16)),
     knights: SquareSet.empty,
     bishops: SquareSet.empty,
     rooks: SquareSet.empty,
@@ -107,7 +108,7 @@ class Board {
   );
 
   /// Empty board.
-  static const empty = Board(
+  static final empty = Board(
     occupied: SquareSet.empty,
     promoted: SquareSet.empty,
     white: SquareSet.empty,

@@ -293,7 +293,7 @@ void main() {
 
   test('Legal board position asserts for attacks', () {
     const illegalBoardPosition = 65;
-    const emptySquareSet = SquareSet.empty;
+    final emptySquareSet = SquareSet.empty;
 
     expect(() {
       kingAttacks(Square(illegalBoardPosition));

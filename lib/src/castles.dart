@@ -52,19 +52,19 @@ abstract class Castles {
   final SquareSet _blackPathQueenSide;
   final SquareSet _blackPathKingSide;
 
-  static const standard = Castles(
+  static final standard = Castles(
     castlingRights: SquareSet.corners,
     whiteRookQueenSide: Square.a1,
     whiteRookKingSide: Square.h1,
     blackRookQueenSide: Square.a8,
     blackRookKingSide: Square.h8,
-    whitePathQueenSide: SquareSet(0x000000000000000e),
-    whitePathKingSide: SquareSet(0x0000000000000060),
-    blackPathQueenSide: SquareSet(0x0e00000000000000),
-    blackPathKingSide: SquareSet(0x6000000000000000),
+    whitePathQueenSide: SquareSet(BigInt.parse('000000000000000e', radix: 16)),
+    whitePathKingSide: SquareSet(BigInt.parse('0000000000000060', radix: 16)),
+    blackPathQueenSide: SquareSet(BigInt.parse('0e00000000000000', radix: 16)),
+    blackPathKingSide: SquareSet(BigInt.parse('6000000000000000', radix: 16)),
   );
 
-  static const empty = Castles(
+  static final empty = Castles(
     castlingRights: SquareSet.empty,
     whitePathQueenSide: SquareSet.empty,
     whitePathKingSide: SquareSet.empty,
@@ -72,14 +72,14 @@ abstract class Castles {
     blackPathKingSide: SquareSet.empty,
   );
 
-  static const horde = Castles(
-    castlingRights: SquareSet(0x8100000000000000),
+  static final horde = Castles(
+    castlingRights: SquareSet(BigInt.parse('8100000000000000', radix: 16)),
     blackRookKingSide: Square.h8,
     blackRookQueenSide: Square.a8,
     whitePathKingSide: SquareSet.empty,
     whitePathQueenSide: SquareSet.empty,
-    blackPathQueenSide: SquareSet(0x0e00000000000000),
-    blackPathKingSide: SquareSet(0x6000000000000000),
+    blackPathQueenSide: SquareSet(BigInt.parse('0e00000000000000', radix: 16)),
+    blackPathKingSide: SquareSet(BigInt.parse('6000000000000000', radix: 16)),
   );
 
   /// Creates a [Castles] instance from a [Setup].

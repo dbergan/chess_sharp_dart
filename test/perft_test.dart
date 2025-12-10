@@ -8,7 +8,7 @@ const nodeLimit = 10000000;
 void main() {
   group('Standard chess', () {
     test('initial position', () {
-      const pos = Chess.initial;
+      final pos = Chess.initial;
       expect(perft(pos, 0), 1);
       expect(perft(pos, 1), 20);
       expect(perft(pos, 2), 400);

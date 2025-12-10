@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-
 import 'package:meta/meta.dart';
-import './setup.dart';
-import './models.dart';
-import './position.dart';
+
+import 'setup.dart';
+import 'models.dart';
+import 'position.dart';
 
 typedef PgnHeaders = Map<String, String>;
 

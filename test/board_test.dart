@@ -22,21 +22,29 @@ void main() {
   test('setPieceAt', () {
     const piece = Piece.whiteKing;
     final board = Board.empty.setPieceAt(Square.a1, piece);
-    expect(board.occupied, const SquareSet(0x0000000000000001));
+    expect(
+        board.occupied, SquareSet(BigInt.parse('0000000000000001', radix: 16)));
     expect(board.pieces.length, 1);
     expect(board.pieceAt(Square.a1), piece);
 
     final board2 = Board.standard.setPieceAt(Square.e8, piece);
     expect(board2.pieceAt(Square.e8), piece);
-    expect(board2.white, const SquareSet(0x100000000000FFFF));
+    expect(
+        board2.white, SquareSet(BigInt.parse('100000000000FFFF', radix: 16)));
 
-    expect(board2.black, const SquareSet(0xEFFF000000000000));
-    expect(board2.pawns, const SquareSet(0x00FF00000000FF00));
-    expect(board2.knights, const SquareSet(0x4200000000000042));
-    expect(board2.bishops, const SquareSet(0x2400000000000024));
+    expect(
+        board2.black, SquareSet(BigInt.parse('EFFF000000000000', radix: 16)));
+    expect(
+        board2.pawns, SquareSet(BigInt.parse('00FF00000000FF00', radix: 16)));
+    expect(
+        board2.knights, SquareSet(BigInt.parse('4200000000000042', radix: 16)));
+    expect(
+        board2.bishops, SquareSet(BigInt.parse('2400000000000024', radix: 16)));
     expect(board2.rooks, SquareSet.corners);
-    expect(board2.queens, const SquareSet(0x0800000000000008));
-    expect(board2.kings, const SquareSet(0x1000000000000010));
+    expect(
+        board2.queens, SquareSet(BigInt.parse('0800000000000008', radix: 16)));
+    expect(
+        board2.kings, SquareSet(BigInt.parse('1000000000000010', radix: 16)));
   });
 
   test('removePieceAt', () {

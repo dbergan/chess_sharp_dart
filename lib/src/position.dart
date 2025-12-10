@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'dart:math' as math;
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+
 import 'attacks.dart';
 import 'castles.dart';
 import 'models.dart';
@@ -256,8 +257,8 @@ abstract class Position {
   /// How many open squares there are to place pieces from the pocket. (Chess♯)
   int get openPlacementSquares {
     final mask = board.occupied.complement().intersect(turn == Side.white
-        ? const SquareSet.fromRank(Rank(0))
-        : const SquareSet.fromRank(Rank(7)));
+        ? SquareSet.fromRank(const Rank(0))
+        : SquareSet.fromRank(const Rank(7)));
 
     return mask.size;
   }
@@ -265,8 +266,8 @@ abstract class Position {
   /// How many open squares there are to place pieces from the pocket. (Chess♯)
   int openPlacementSquaresSide(Side side) {
     final mask = board.occupied.complement().intersect(side == Side.white
-        ? const SquareSet.fromRank(Rank(0))
-        : const SquareSet.fromRank(Rank(7)));
+        ? SquareSet.fromRank(const Rank(0))
+        : SquareSet.fromRank(const Rank(7)));
 
     return mask.size;
   }
@@ -1258,7 +1259,7 @@ abstract class Chess extends Position {
   }
 
   /// The initial position of a standard chess game.
-  static const initial = Chess(
+  static final initial = Chess(
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -1321,7 +1322,7 @@ abstract class Antichess extends Position {
   }
 
   /// The initial position of an Antichess game.
-  static const initial = Antichess(
+  static final initial = Antichess(
     board: Board.standard,
     turn: Side.white,
     castles: Castles.empty,
@@ -1457,7 +1458,7 @@ abstract class Atomic extends Position {
   }
 
   /// The initial position of an Atomic game.
-  static const initial = Atomic(
+  static final initial = Atomic(
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -1680,7 +1681,7 @@ abstract class Crazyhouse extends Position {
   }
 
   /// The initial position of a Crazyhouse game.
-  static const initial = Crazyhouse(
+  static final initial = Crazyhouse(
     board: Board.standard,
     pockets: Pockets.empty,
     turn: Side.white,
@@ -1795,7 +1796,7 @@ abstract class ChessSharp extends Position {
     return pos;
   }
 
-  static const initial = ChessSharp(
+  static final initial = ChessSharp(
     board: Board.chessSharp,
     pockets: Pockets.chessSharp,
     turn: Side.white,
@@ -1804,7 +1805,7 @@ abstract class ChessSharp extends Position {
     fullmoves: 1,
   );
 
-  static const chessFlat = ChessSharp(
+  static final chessFlat = ChessSharp(
     board: Board.chessSharp,
     pockets: Pockets.chessFlat,
     turn: Side.white,
@@ -1813,7 +1814,7 @@ abstract class ChessSharp extends Position {
     fullmoves: 1,
   );
 
-  static const chessDoubleSharp = ChessSharp(
+  static final chessDoubleSharp = ChessSharp(
     board: Board.chessSharp,
     pockets: Pockets.chessDoubleSharp,
     turn: Side.white,
@@ -1822,7 +1823,7 @@ abstract class ChessSharp extends Position {
     fullmoves: 1,
   );
 
-  static const chessDoubleFlat = ChessSharp(
+  static final chessDoubleFlat = ChessSharp(
     board: Board.chessSharp,
     pockets: Pockets.chessDoubleFlat,
     turn: Side.white,
@@ -1831,7 +1832,7 @@ abstract class ChessSharp extends Position {
     fullmoves: 1,
   );
 
-  static const chessTripleFlat = ChessSharp(
+  static final chessTripleFlat = ChessSharp(
     board: Board.chessSharp,
     pockets: Pockets.chessTripleFlat,
     turn: Side.white,
@@ -1965,8 +1966,8 @@ abstract class ChessSharp extends Position {
   @override
   SquareSet get legalDrops {
     final mask = board.occupied.complement().intersect(turn == Side.white
-        ? const SquareSet.fromRank(Rank(0))
-        : const SquareSet.fromRank(Rank(7)));
+        ? SquareSet.fromRank(const Rank(0))
+        : SquareSet.fromRank(const Rank(7)));
 
     return mask;
   }
@@ -2036,7 +2037,7 @@ abstract class KingOfTheHill extends Position {
   }
 
   /// The initial position of a KingOfTheHill game.
-  static const initial = KingOfTheHill(
+  static final initial = KingOfTheHill(
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -2119,7 +2120,7 @@ abstract class ThreeCheck extends Position {
   final (int, int) remainingChecks;
 
   /// The initial position of a ThreeCheck game.
-  static const initial = ThreeCheck(
+  static final initial = ThreeCheck(
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -2223,7 +2224,7 @@ abstract class RacingKings extends Position {
   }
 
   /// The initial position of a RacingKings game.
-  static const initial = RacingKings(
+  static final initial = RacingKings(
     board: Board.racingKings,
     turn: Side.white,
     castles: Castles.empty,
@@ -2231,7 +2232,7 @@ abstract class RacingKings extends Position {
     fullmoves: 1,
   );
 
-  static const goal = SquareSet.fromRank(Rank.eighth);
+  static final goal = SquareSet.fromRank(Rank.eighth);
 
   bool get blackCanReachGoal {
     final blackKing = board.kingOf(Side.black);
@@ -2344,7 +2345,7 @@ abstract class Horde extends Position {
   }
 
   /// The initial position of the Horde variant.
-  static const initial = Horde(
+  static final initial = Horde(
     board: Board.horde,
     turn: Side.white,
     castles: Castles.horde,
