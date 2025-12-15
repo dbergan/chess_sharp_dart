@@ -306,6 +306,36 @@ class PgnNodeData {
 
   /// Numeric Annotation Glyphs for the move.
   List<int>? nags;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PgnNodeData &&
+          san == other.san &&
+          startingComments == other.startingComments &&
+          comments == other.comments &&
+          nags == other.nags;
+
+  @override
+  int get hashCode => Object.hash(san, startingComments, comments, nags);
+
+  /// Return a new PgnNodeData by adding a [comment] to the current object
+  PgnNodeData copyWithComment(String comment) {
+    return PgnNodeData(
+        san: san,
+        startingComments: startingComments,
+        comments: [...comments ?? [], comment],
+        nags: nags);
+  }
+
+  /// Return a new PgnNodeData by adding a [nag] to the current object
+  PgnNodeData copyWithNag(int nag) {
+    return PgnNodeData(
+        san: san,
+        startingComments: startingComments,
+        comments: comments,
+        nags: [...nags ?? [], nag]);
+  }
 }
 
 /// Parent node containing a list of child nodes (does not contain any data itself).
