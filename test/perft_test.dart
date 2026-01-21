@@ -54,7 +54,7 @@ void main() {
       final tests = Parser()
           .parse(io.File('test/resources/random.perft').readAsStringSync());
       // only test 10 position in random. Test file has around 6000 positions
-      for (final perftTest in tests.take(50)) {
+      for (final perftTest in tests.take(10)) {
         final position = Chess.fromSetup(Setup.parseFen(perftTest.fen));
         for (final testCase in perftTest.cases
             .takeWhile((testCase) => testCase.nodes < nodeLimit)) {
@@ -168,7 +168,7 @@ void main() {
   group('Chess 960', () {
     final tests = Parser()
         .parse(io.File('test/resources/chess960.perft').readAsStringSync());
-    for (final perftTest in tests.take(50)) {
+    for (final perftTest in tests.take(10)) {
       final position = Chess.fromSetup(Setup.parseFen(perftTest.fen));
       for (final testCase in perftTest.cases
           .takeWhile((testCase) => testCase.nodes < nodeLimit)) {

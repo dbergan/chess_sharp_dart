@@ -23,28 +23,44 @@ void main() {
     const piece = Piece.whiteKing;
     final board = Board.empty.setPieceAt(Square.a1, piece);
     expect(
-        board.occupied, SquareSet(BigInt.parse('0000000000000001', radix: 16)));
+      board.occupied,
+      SquareSet.fromBigInt(BigInt.parse('0000000000000001', radix: 16)),
+    );
     expect(board.pieces.length, 1);
     expect(board.pieceAt(Square.a1), piece);
 
     final board2 = Board.standard.setPieceAt(Square.e8, piece);
     expect(board2.pieceAt(Square.e8), piece);
     expect(
-        board2.white, SquareSet(BigInt.parse('100000000000FFFF', radix: 16)));
+      board2.white,
+      SquareSet.fromBigInt(BigInt.parse('100000000000FFFF', radix: 16)),
+    );
 
     expect(
-        board2.black, SquareSet(BigInt.parse('EFFF000000000000', radix: 16)));
+      board2.black,
+      SquareSet.fromBigInt(BigInt.parse('EFFF000000000000', radix: 16)),
+    );
     expect(
-        board2.pawns, SquareSet(BigInt.parse('00FF00000000FF00', radix: 16)));
+      board2.pawns,
+      SquareSet.fromBigInt(BigInt.parse('00FF00000000FF00', radix: 16)),
+    );
     expect(
-        board2.knights, SquareSet(BigInt.parse('4200000000000042', radix: 16)));
+      board2.knights,
+      SquareSet.fromBigInt(BigInt.parse('4200000000000042', radix: 16)),
+    );
     expect(
-        board2.bishops, SquareSet(BigInt.parse('2400000000000024', radix: 16)));
+      board2.bishops,
+      SquareSet.fromBigInt(BigInt.parse('2400000000000024', radix: 16)),
+    );
     expect(board2.rooks, SquareSet.corners);
     expect(
-        board2.queens, SquareSet(BigInt.parse('0800000000000008', radix: 16)));
+      board2.queens,
+      SquareSet.fromBigInt(BigInt.parse('0800000000000008', radix: 16)),
+    );
     expect(
-        board2.kings, SquareSet(BigInt.parse('1000000000000010', radix: 16)));
+      board2.kings,
+      SquareSet.fromBigInt(BigInt.parse('1000000000000010', radix: 16)),
+    );
   });
 
   test('removePieceAt', () {
@@ -58,19 +74,24 @@ void main() {
   });
 
   test('parse board fen, promoted piece', () {
-    final board =
-        Board.parseFen('rQ~q1kb1r/pp2pppp/2p5/8/3P1Bb1/4PN2/PPP3PP/R2QKB1R');
+    final board = Board.parseFen(
+      'rQ~q1kb1r/pp2pppp/2p5/8/3P1Bb1/4PN2/PPP3PP/R2QKB1R',
+    );
     expect(board.promoted.squares.length, 1);
   });
 
   test('invalid board fen', () {
     expect(
-        () => Board.parseFen('4k2r/8/8/8/8/RR2K2R'),
-        throwsA(predicate(
-            (e) => e is FenException && e.cause == IllegalFenCause.board)));
+      () => Board.parseFen('4k2r/8/8/8/8/RR2K2R'),
+      throwsA(
+        predicate((e) => e is FenException && e.cause == IllegalFenCause.board),
+      ),
+    );
 
-    expect(() => Board.parseFen('lol'),
-        throwsA(const TypeMatcher<FenException>()));
+    expect(
+      () => Board.parseFen('lol'),
+      throwsA(const TypeMatcher<FenException>()),
+    );
   });
 
   test('make board fen', () {

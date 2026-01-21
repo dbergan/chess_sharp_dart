@@ -19,6 +19,7 @@ class Board {
     required this.rooks,
     required this.queens,
     required this.kings,
+    required this.stars,
   });
 
   /// All occupied squares.
@@ -53,62 +54,69 @@ class Board {
   /// All squares occupied by kings.
   final SquareSet kings;
 
+  /// All squares occupied by stars.
+  final SquareSet stars;
+
   /// Standard chess starting position.
   static final standard = Board(
-    occupied: SquareSet(BigInt.parse('ffff00000000ffff', radix: 16)),
+    occupied: SquareSet.fromBigInt(BigInt.parse('ffff00000000ffff', radix: 16)),
     promoted: SquareSet.empty,
-    white: SquareSet(BigInt.parse('ffff', radix: 16)),
-    black: SquareSet(BigInt.parse('ffff000000000000', radix: 16)),
-    pawns: SquareSet(BigInt.parse('00ff00000000ff00', radix: 16)),
-    knights: SquareSet(BigInt.parse('4200000000000042', radix: 16)),
-    bishops: SquareSet(BigInt.parse('2400000000000024', radix: 16)),
+    white: SquareSet.fromBigInt(BigInt.parse('ffff', radix: 16)),
+    black: SquareSet.fromBigInt(BigInt.parse('ffff000000000000', radix: 16)),
+    pawns: SquareSet.fromBigInt(BigInt.parse('00ff00000000ff00', radix: 16)),
+    knights: SquareSet.fromBigInt(BigInt.parse('4200000000000042', radix: 16)),
+    bishops: SquareSet.fromBigInt(BigInt.parse('2400000000000024', radix: 16)),
     rooks: SquareSet.corners,
-    queens: SquareSet(BigInt.parse('0800000000000008', radix: 16)),
-    kings: SquareSet(BigInt.parse('1000000000000010', radix: 16)),
+    queens: SquareSet.fromBigInt(BigInt.parse('0800000000000008', radix: 16)),
+    kings: SquareSet.fromBigInt(BigInt.parse('1000000000000010', radix: 16)),
+    stars: SquareSet.empty,
   );
 
   /// Racing Kings start position
   static final racingKings = Board(
-      occupied: SquareSet(BigInt.parse('ffff', radix: 16)),
-      promoted: SquareSet.empty,
-      white: SquareSet(BigInt.parse('f0f0', radix: 16)),
-      black: SquareSet(BigInt.parse('0f0f', radix: 16)),
-      pawns: SquareSet.empty,
-      knights: SquareSet(BigInt.parse('1818', radix: 16)),
-      bishops: SquareSet(BigInt.parse('2424', radix: 16)),
-      rooks: SquareSet(BigInt.parse('4242', radix: 16)),
-      queens: SquareSet(BigInt.parse('0081', radix: 16)),
-      kings: SquareSet(BigInt.parse('8100', radix: 16)));
+    occupied: SquareSet.fromBigInt(BigInt.parse('ffff', radix: 16)),
+    promoted: SquareSet.empty,
+    white: SquareSet.fromBigInt(BigInt.parse('f0f0', radix: 16)),
+    black: SquareSet.fromBigInt(BigInt.parse('0f0f', radix: 16)),
+    pawns: SquareSet.empty,
+    knights: SquareSet.fromBigInt(BigInt.parse('1818', radix: 16)),
+    bishops: SquareSet.fromBigInt(BigInt.parse('2424', radix: 16)),
+    rooks: SquareSet.fromBigInt(BigInt.parse('4242', radix: 16)),
+    queens: SquareSet.fromBigInt(BigInt.parse('0081', radix: 16)),
+    kings: SquareSet.fromBigInt(BigInt.parse('8100', radix: 16)),
+    stars: SquareSet.empty,
+  );
 
   /// Horde start Position
   static final horde = Board(
-    occupied: SquareSet(BigInt.parse('ffff0066ffffffff', radix: 16)),
+    occupied: SquareSet.fromBigInt(BigInt.parse('ffff0066ffffffff', radix: 16)),
     promoted: SquareSet.empty,
-    white: SquareSet(BigInt.parse('00000066ffffffff', radix: 16)),
-    black: SquareSet(BigInt.parse('ffff000000000000', radix: 16)),
-    pawns: SquareSet(BigInt.parse('00ff0066ffffffff', radix: 16)),
-    knights: SquareSet(BigInt.parse('4200000000000000', radix: 16)),
-    bishops: SquareSet(BigInt.parse('2400000000000000', radix: 16)),
-    rooks: SquareSet(BigInt.parse('8100000000000000', radix: 16)),
-    queens: SquareSet(BigInt.parse('0800000000000000', radix: 16)),
-    kings: SquareSet(BigInt.parse('1000000000000000', radix: 16)),
+    white: SquareSet.fromBigInt(BigInt.parse('00000066ffffffff', radix: 16)),
+    black: SquareSet.fromBigInt(BigInt.parse('ffff000000000000', radix: 16)),
+    pawns: SquareSet.fromBigInt(BigInt.parse('00ff0066ffffffff', radix: 16)),
+    knights: SquareSet.fromBigInt(BigInt.parse('4200000000000000', radix: 16)),
+    bishops: SquareSet.fromBigInt(BigInt.parse('2400000000000000', radix: 16)),
+    rooks: SquareSet.fromBigInt(BigInt.parse('8100000000000000', radix: 16)),
+    queens: SquareSet.fromBigInt(BigInt.parse('0800000000000000', radix: 16)),
+    kings: SquareSet.fromBigInt(BigInt.parse('1000000000000000', radix: 16)),
+    stars: SquareSet.empty,
   );
 
   static final chessSharp = Board(
-    occupied: SquareSet(BigInt.parse('00ff00000000ff00', radix: 16)),
+    occupied: SquareSet.fromBigInt(BigInt.parse('00ff00000000ff00', radix: 16)),
     promoted: SquareSet.empty,
-    white: SquareSet(BigInt.parse('000000000000ff00', radix: 16)),
-    black: SquareSet(BigInt.parse('00ff000000000000', radix: 16)),
-    pawns: SquareSet(BigInt.parse('00ff00000000ff00', radix: 16)),
+    white: SquareSet.fromBigInt(BigInt.parse('000000000000ff00', radix: 16)),
+    black: SquareSet.fromBigInt(BigInt.parse('00ff000000000000', radix: 16)),
+    pawns: SquareSet.fromBigInt(BigInt.parse('00ff00000000ff00', radix: 16)),
     knights: SquareSet.empty,
     bishops: SquareSet.empty,
     rooks: SquareSet.empty,
     queens: SquareSet.empty,
     kings: SquareSet.empty,
+    stars: SquareSet.empty,
   );
 
-  /// Empty board.
-  static final empty = Board(
+  static const catchTheStars = Board(
     occupied: SquareSet.empty,
     promoted: SquareSet.empty,
     white: SquareSet.empty,
@@ -119,6 +127,22 @@ class Board {
     rooks: SquareSet.empty,
     queens: SquareSet.empty,
     kings: SquareSet.empty,
+    stars: SquareSet.empty,
+  );
+
+  /// Empty board.
+  static const empty = Board(
+    occupied: SquareSet.empty,
+    promoted: SquareSet.empty,
+    white: SquareSet.empty,
+    black: SquareSet.empty,
+    pawns: SquareSet.empty,
+    knights: SquareSet.empty,
+    bishops: SquareSet.empty,
+    rooks: SquareSet.empty,
+    queens: SquareSet.empty,
+    kings: SquareSet.empty,
+    stars: SquareSet.empty,
   );
 
   /// Parse the board part of a FEN string and returns a Board.
@@ -161,6 +185,9 @@ class Board {
   /// The square set of all bishops and queens.
   SquareSet get bishopsAndQueens => bishops | queens;
 
+  /// The square set of all pieces that aren't a bishop
+  SquareSet get nonBishops => pawns | knights | rooks | queens | kings;
+
   /// Board part of the Forsyth-Edwards-Notation.
   String get fen {
     final buffer = StringBuffer();
@@ -200,7 +227,8 @@ class Board {
 
   /// Gets the number of pieces of each [Role] for the given [Side].
   IMap<Role, int> materialCount(Side side) => IMap.fromEntries(
-      Role.values.map((role) => MapEntry(role, piecesOf(side, role).size)));
+    Role.values.map((role) => MapEntry(role, piecesOf(side, role).size)),
+  );
 
   /// A [SquareSet] of all the pieces matching this [Side] and [Role].
   SquareSet piecesOf(Side side, Role role) {
@@ -225,6 +253,8 @@ class Board {
         return queens;
       case Role.king:
         return kings;
+      case Role.star:
+        return stars;
     }
   }
 
@@ -272,54 +302,73 @@ class Board {
 
   /// Finds the squares who are attacking `square` by the `attacker` [Side].
   SquareSet attacksTo(Square square, Side attacker, {SquareSet? occupied}) =>
-      bySide(attacker).intersect(rookAttacks(square, occupied ?? this.occupied)
-          .intersect(rooksAndQueens)
-          .union(bishopAttacks(square, occupied ?? this.occupied)
-              .intersect(bishopsAndQueens))
-          .union(knightAttacks(square).intersect(knights))
-          .union(kingAttacks(square).intersect(kings))
-          .union(pawnAttacks(attacker.opposite, square).intersect(pawns)));
+      bySide(attacker).intersect(
+        rookAttacks(square, occupied ?? this.occupied)
+            .intersect(rooksAndQueens)
+            .union(
+              bishopAttacks(
+                square,
+                occupied ?? this.occupied,
+              ).intersect(bishopsAndQueens),
+            )
+            .union(knightAttacks(square).intersect(knights))
+            .union(kingAttacks(square).intersect(kings))
+            .union(pawnAttacks(attacker.opposite, square).intersect(pawns)),
+      );
 
   /// Puts a [Piece] on a [Square] overriding the existing one, if any.
   Board setPieceAt(Square square, Piece piece) {
-    return removePieceAt(square).copyWith(
-      occupied: occupied.withSquare(square),
-      promoted: piece.promoted ? promoted.withSquare(square) : null,
-      white: piece.color == Side.white ? white.withSquare(square) : null,
-      black: piece.color == Side.black ? black.withSquare(square) : null,
-      pawns: piece.role == Role.pawn ? pawns.withSquare(square) : null,
-      knights: piece.role == Role.knight ? knights.withSquare(square) : null,
-      bishops: piece.role == Role.bishop ? bishops.withSquare(square) : null,
-      rooks: piece.role == Role.rook ? rooks.withSquare(square) : null,
-      queens: piece.role == Role.queen ? queens.withSquare(square) : null,
-      kings: piece.role == Role.king ? kings.withSquare(square) : null,
+    final b = removePieceAt(square);
+    return b.copyWith(
+      occupied: b.occupied.withSquare(square),
+      promoted: piece.promoted
+          ? b.promoted.withSquare(square)
+          : b.promoted.withoutSquare(square),
+      white: piece.color == Side.white
+          ? b.white.withSquare(square)
+          : b.white.withoutSquare(square),
+      black: piece.color == Side.black
+          ? b.black.withSquare(square)
+          : b.black.withoutSquare(square),
+      pawns: piece.role == Role.pawn
+          ? b.pawns.withSquare(square)
+          : b.pawns.withoutSquare(square),
+      knights: piece.role == Role.knight
+          ? b.knights.withSquare(square)
+          : b.knights.withoutSquare(square),
+      bishops: piece.role == Role.bishop
+          ? b.bishops.withSquare(square)
+          : b.bishops.withoutSquare(square),
+      rooks: piece.role == Role.rook
+          ? b.rooks.withSquare(square)
+          : b.rooks.withoutSquare(square),
+      queens: piece.role == Role.queen
+          ? b.queens.withSquare(square)
+          : b.queens.withoutSquare(square),
+      kings: piece.role == Role.king
+          ? b.kings.withSquare(square)
+          : b.kings.withoutSquare(square),
+      stars: piece.role == Role.star
+          ? b.stars.withSquare(square)
+          : b.stars.withoutSquare(square),
     );
   }
 
   /// Removes the [Piece] at this [Square] if it exists.
   Board removePieceAt(Square square) {
-    final piece = pieceAt(square);
-    return piece != null
-        ? copyWith(
-            occupied: occupied.withoutSquare(square),
-            promoted: piece.promoted ? promoted.withoutSquare(square) : null,
-            white:
-                piece.color == Side.white ? white.withoutSquare(square) : null,
-            black:
-                piece.color == Side.black ? black.withoutSquare(square) : null,
-            pawns: piece.role == Role.pawn ? pawns.withoutSquare(square) : null,
-            knights: piece.role == Role.knight
-                ? knights.withoutSquare(square)
-                : null,
-            bishops: piece.role == Role.bishop
-                ? bishops.withoutSquare(square)
-                : null,
-            rooks: piece.role == Role.rook ? rooks.withoutSquare(square) : null,
-            queens:
-                piece.role == Role.queen ? queens.withoutSquare(square) : null,
-            kings: piece.role == Role.king ? kings.withoutSquare(square) : null,
-          )
-        : this;
+    return copyWith(
+      occupied: occupied.withoutSquare(square),
+      promoted: promoted.withoutSquare(square),
+      white: white.withoutSquare(square),
+      black: black.withoutSquare(square),
+      pawns: pawns.withoutSquare(square),
+      knights: knights.withoutSquare(square),
+      bishops: bishops.withoutSquare(square),
+      rooks: rooks.withoutSquare(square),
+      queens: queens.withoutSquare(square),
+      kings: kings.withoutSquare(square),
+      stars: stars.withoutSquare(square),
+    );
   }
 
   /// Returns a new board with a new [promoted] square set.
@@ -339,6 +388,7 @@ class Board {
     SquareSet? rooks,
     SquareSet? queens,
     SquareSet? kings,
+    SquareSet? stars,
   }) {
     return Board(
       occupied: occupied ?? this.occupied,
@@ -351,6 +401,7 @@ class Board {
       rooks: rooks ?? this.rooks,
       queens: queens ?? this.queens,
       kings: kings ?? this.kings,
+      stars: stars ?? this.stars,
     );
   }
 
@@ -374,17 +425,28 @@ class Board {
   }
 
   @override
-  int get hashCode => Object.hash(occupied, promoted, white, black, pawns,
-      knights, bishops, rooks, queens, kings);
+  int get hashCode => Object.hash(
+    occupied,
+    promoted,
+    white,
+    black,
+    pawns,
+    knights,
+    bishops,
+    rooks,
+    queens,
+    kings,
+  );
 }
 
 Piece? _charToPiece(String ch, bool promoted) {
   final role = Role.fromChar(ch);
   if (role != null) {
     return Piece(
-        role: role,
-        color: ch == ch.toLowerCase() ? Side.black : Side.white,
-        promoted: promoted);
+      role: role,
+      color: ch == ch.toLowerCase() ? Side.black : Side.white,
+      promoted: promoted,
+    );
   }
   return null;
 }

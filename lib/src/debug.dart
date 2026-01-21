@@ -3,6 +3,8 @@ import 'models.dart';
 import 'position.dart';
 import 'square_set.dart';
 import 'setup.dart';
+import 'internal/mutable_position.dart';
+import 'internal/fast_perft.dart';
 
 /// Takes a string and returns a SquareSet. Useful for debugging/testing purposes.
 ///
@@ -81,8 +83,13 @@ final _promotionRoles = [Role.queen, Role.rook, Role.knight, Role.bishop];
 int perft(Position pos, int depth, {bool shouldLog = false}) {
   if (depth < 1) return 1;
 
-  final promotionRoles =
-      pos is Antichess ? [..._promotionRoles, Role.king] : _promotionRoles;
+  if (!shouldLog && pos.rule == Rule.chess && depth > 1) {
+    return FastPerft.execute(MutablePosition(pos), depth);
+  }
+
+  final promotionRoles = pos is Antichess
+      ? [..._promotionRoles, Role.king]
+      : _promotionRoles;
   final legalDrops = pos.legalDrops;
 
   if (!shouldLog && depth == 1 && legalDrops.isEmpty) {
@@ -103,7 +110,8 @@ int perft(Position pos, int depth, {bool shouldLog = false}) {
     for (final entry in pos.legalMoves.entries) {
       final from = entry.key;
       final dests = entry.value;
-      final promotions = from.rank == (pos.turn == Side.white ? 6 : 1) &&
+      final promotions =
+          from.rank == (pos.turn == Side.white ? 6 : 1) &&
               pos.board.pawns.has(from)
           ? promotionRoles
           : [null];
@@ -120,10 +128,11 @@ int perft(Position pos, int depth, {bool shouldLog = false}) {
     if (pos.pockets != null) {
       for (final role in Role.values) {
         if (pos.pockets!.of(pos.turn, role) > 0) {
-          for (final to in (role == Role.pawn
-                  ? legalDrops.diff(SquareSet.backranks)
-                  : legalDrops)
-              .squares) {
+          for (final to
+              in (role == Role.pawn
+                      ? legalDrops.diff(SquareSet.backranks)
+                      : legalDrops)
+                  .squares) {
             final drop = DropMove(role: role, to: to);
             final child = pos.playUnchecked(drop);
             final children = perft(child, depth - 1);

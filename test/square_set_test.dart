@@ -13,10 +13,15 @@ void main() {
       expect(SquareSet.corners.toHexString(), '0x8100000000000081');
       expect(SquareSet.backranks.toHexString(), '0xFF000000000000FF');
       expect(
-          SquareSet(BigInt.parse('0000000000000001', radix: 16)).toHexString(),
-          '0x0000000000000001');
-      expect(SquareSet(BigInt.parse('f', radix: 16)).toHexString(),
-          '0x000000000000000F');
+        SquareSet.fromBigInt(
+          BigInt.parse('0000000000000001', radix: 16),
+        ).toHexString(),
+        '0x0000000000000001',
+      );
+      expect(
+        SquareSet.fromBigInt(BigInt.parse('f', radix: 16)).toHexString(),
+        '0x000000000000000F',
+      );
     });
 
     test('full set has all', () {
@@ -34,23 +39,51 @@ void main() {
     });
 
     test('shr', () {
-      final r = SquareSet(BigInt.parse('e0a12221e222212', radix: 16));
+      final r = SquareSet.fromBigInt(
+        BigInt.parse('e0a12221e222212', radix: 16),
+      );
       expect(r.shr(0), r);
-      expect(r.shr(1), SquareSet(BigInt.parse('70509110f111109', radix: 16)));
-      expect(r.shr(3), SquareSet(BigInt.parse('1c1424443c44442', radix: 16)));
-      expect(r.shr(48), SquareSet(BigInt.parse('e0a', radix: 16)));
+      expect(
+        r.shr(1),
+        SquareSet.fromBigInt(BigInt.parse('70509110f111109', radix: 16)),
+      );
+      expect(
+        r.shr(3),
+        SquareSet.fromBigInt(BigInt.parse('1c1424443c44442', radix: 16)),
+      );
+      expect(r.shr(48), SquareSet.fromBigInt(BigInt.parse('e0a', radix: 16)));
       expect(r.shr(62), SquareSet.empty);
     });
 
     test('shl', () {
-      final r = SquareSet(BigInt.parse('e0a12221e222212', radix: 16));
+      final r = SquareSet.fromBigInt(
+        BigInt.parse('e0a12221e222212', radix: 16),
+      );
       expect(r.shl(0), r);
-      expect(r.shl(1), SquareSet(BigInt.parse('1c1424443c444424', radix: 16)));
-      expect(r.shl(3), SquareSet(BigInt.parse('70509110f1111090', radix: 16)));
-      expect(r.shl(10), SquareSet(BigInt.parse('2848887888884800', radix: 16)));
-      expect(r.shl(32), SquareSet(BigInt.parse('1e22221200000000', radix: 16)));
-      expect(r.shl(48), SquareSet(BigInt.parse('2212000000000000', radix: 16)));
-      expect(r.shl(62), SquareSet(BigInt.parse('8000000000000000', radix: 16)));
+      expect(
+        r.shl(1),
+        SquareSet.fromBigInt(BigInt.parse('1c1424443c444424', radix: 16)),
+      );
+      expect(
+        r.shl(3),
+        SquareSet.fromBigInt(BigInt.parse('70509110f1111090', radix: 16)),
+      );
+      expect(
+        r.shl(10),
+        SquareSet.fromBigInt(BigInt.parse('2848887888884800', radix: 16)),
+      );
+      expect(
+        r.shl(32),
+        SquareSet.fromBigInt(BigInt.parse('1e22221200000000', radix: 16)),
+      );
+      expect(
+        r.shl(48),
+        SquareSet.fromBigInt(BigInt.parse('2212000000000000', radix: 16)),
+      );
+      expect(
+        r.shl(62),
+        SquareSet.fromBigInt(BigInt.parse('8000000000000000', radix: 16)),
+      );
       expect(r.shl(63), SquareSet.empty);
     });
 
@@ -80,74 +113,88 @@ void main() {
       expect(SquareSet.empty.moreThanOne, false);
       expect(SquareSet.full.moreThanOne, true);
       expect(SquareSet.fromSquare(Square.e1).moreThanOne, false);
-      expect(SquareSet.fromSquare(Square.e1).withSquare(Square.f1).moreThanOne,
-          true);
+      expect(
+        SquareSet.fromSquare(Square.e1).withSquare(Square.f1).moreThanOne,
+        true,
+      );
     });
 
     test('singleSquare', () {
       expect(SquareSet.empty.singleSquare, null);
       expect(SquareSet.full.singleSquare, null);
       expect(SquareSet.fromSquare(Square.e1).singleSquare, Square.e1);
-      expect(SquareSet.fromSquare(Square.e1).withSquare(Square.f1).singleSquare,
-          null);
+      expect(
+        SquareSet.fromSquare(Square.e1).withSquare(Square.f1).singleSquare,
+        null,
+      );
     });
 
     test('squares', () {
       expect(SquareSet.empty.squares.toList(), List<Square>.empty());
+      expect(SquareSet.full.squares.toList(), [
+        for (int i = 0; i < 64; i++) Square(i),
+      ]);
       expect(
-        SquareSet.full.squares.toList(),
-        [for (int i = 0; i < 64; i++) Square(i)],
+        SquareSet.diagonal.squares,
+        equals([
+          Square.a1,
+          Square.b2,
+          Square.c3,
+          Square.d4,
+          Square.e5,
+          Square.f6,
+          Square.g7,
+          Square.h8,
+        ]),
       );
-      expect(
-          SquareSet.diagonal.squares,
-          equals([
-            Square.a1,
-            Square.b2,
-            Square.c3,
-            Square.d4,
-            Square.e5,
-            Square.f6,
-            Square.g7,
-            Square.h8,
-          ]));
     });
 
     test('squaresReversed', () {
       expect(SquareSet.empty.squaresReversed.toList(), List<Square>.empty());
+      expect(SquareSet.full.squaresReversed.toList(), [
+        for (int i = 63; i >= 0; i--) Square(i),
+      ]);
       expect(
-        SquareSet.full.squaresReversed.toList(),
-        [for (int i = 63; i >= 0; i--) Square(i)],
+        SquareSet.diagonal.squaresReversed,
+        equals([
+          Square.h8,
+          Square.g7,
+          Square.f6,
+          Square.e5,
+          Square.d4,
+          Square.c3,
+          Square.b2,
+          Square.a1,
+        ]),
       );
-      expect(
-          SquareSet.diagonal.squaresReversed,
-          equals([
-            Square.h8,
-            Square.g7,
-            Square.f6,
-            Square.e5,
-            Square.d4,
-            Square.c3,
-            Square.b2,
-            Square.a1,
-          ]));
     });
 
     test('from file', () {
-      expect(SquareSet.fromFile(const File(0)),
-          SquareSet(BigInt.parse('0101010101010101', radix: 16)));
-      expect(SquareSet.fromFile(const File(7)),
-          SquareSet(BigInt.parse('8080808080808080', radix: 16)));
+      expect(
+        SquareSet.fromFile(const File(0)),
+        SquareSet.fromBigInt(BigInt.parse('0101010101010101', radix: 16)),
+      );
+      expect(
+        SquareSet.fromFile(const File(7)),
+        SquareSet.fromBigInt(BigInt.parse('8080808080808080', radix: 16)),
+      );
     });
 
     test('from rank', () {
-      expect(SquareSet.fromRank(const Rank(0)),
-          SquareSet(BigInt.parse('00000000000000FF', radix: 16)));
-      expect(SquareSet.fromRank(const Rank(7)),
-          SquareSet(BigInt.parse('FF00000000000000', radix: 16)));
+      expect(
+        SquareSet.fromRank(const Rank(0)),
+        SquareSet.fromBigInt(BigInt.parse('00000000000000FF', radix: 16)),
+      );
+      expect(
+        SquareSet.fromRank(const Rank(7)),
+        SquareSet.fromBigInt(BigInt.parse('FF00000000000000', radix: 16)),
+      );
     });
 
     test('from square', () {
-      expect(SquareSet.fromSquare(Square.c6), makeSquareSet('''
+      expect(
+        SquareSet.fromSquare(Square.c6),
+        makeSquareSet('''
 . . . . . . . .
 . . . . . . . .
 . . 1 . . . . .
@@ -156,19 +203,28 @@ void main() {
 . . . . . . . .
 . . . . . . . .
 . . . . . . . .
-'''));
+'''),
+      );
 
-      expect(SquareSet.fromSquare(Square.a1),
-          SquareSet(BigInt.parse('1', radix: 16)));
-      expect(SquareSet.fromSquare(Square.h8),
-          SquareSet(BigInt.parse('8000000000000000', radix: 16)));
+      expect(
+        SquareSet.fromSquare(Square.a1),
+        SquareSet.fromBigInt(BigInt.parse('1', radix: 16)),
+      );
+      expect(
+        SquareSet.fromSquare(Square.h8),
+        SquareSet.fromBigInt(BigInt.parse('8000000000000000', radix: 16)),
+      );
     });
 
     test('from squares', () {
       expect(
-          SquareSet.fromSquares(
-              const [Square.c6, Square.e6, Square.c4, Square.e4]),
-          makeSquareSet('''
+        SquareSet.fromSquares(const [
+          Square.c6,
+          Square.e6,
+          Square.c4,
+          Square.e4,
+        ]),
+        makeSquareSet('''
 . . . . . . . .
 . . . . . . . .
 . . 1 . 1 . . .
@@ -177,11 +233,14 @@ void main() {
 . . . . . . . .
 . . . . . . . .
 . . . . . . . .
-'''));
+'''),
+      );
     });
 
     test('with square', () {
-      expect(SquareSet.center.withSquare(Square.d6), makeSquareSet('''
+      expect(
+        SquareSet.center.withSquare(Square.d6),
+        makeSquareSet('''
 . . . . . . . .
 . . . . . . . .
 . . . 1 . . . .
@@ -190,11 +249,14 @@ void main() {
 . . . . . . . .
 . . . . . . . .
 . . . . . . . .
-'''));
+'''),
+      );
     });
 
     test('without square', () {
-      expect(SquareSet.center.withoutSquare(Square.d4), makeSquareSet('''
+      expect(
+        SquareSet.center.withoutSquare(Square.d4),
+        makeSquareSet('''
 . . . . . . . .
 . . . . . . . .
 . . . . . . . .
@@ -203,12 +265,14 @@ void main() {
 . . . . . . . .
 . . . . . . . .
 . . . . . . . .
-'''));
+'''),
+      );
     });
 
     test('toggle square', () {
-      expect(SquareSet.center.toggleSquare(Square.d5).toggleSquare(Square.d6),
-          makeSquareSet('''
+      expect(
+        SquareSet.center.toggleSquare(Square.d5).toggleSquare(Square.d6),
+        makeSquareSet('''
 . . . . . . . .
 . . . . . . . .
 . . . 1 . . . .
@@ -217,11 +281,13 @@ void main() {
 . . . . . . . .
 . . . . . . . .
 . . . . . . . .
-'''));
+'''),
+      );
     });
 
     test('flip vertical', () {
-      expect(makeSquareSet('''
+      expect(
+        makeSquareSet('''
 . 1 1 1 1 . . .
 . 1 . . . 1 . .
 . 1 . . . 1 . .
@@ -230,7 +296,8 @@ void main() {
 . 1 . 1 . . . .
 . 1 . . 1 . . .
 . 1 . . . 1 . .
-''').flipVertical(), makeSquareSet('''
+''').flipVertical(),
+        makeSquareSet('''
 . 1 . . . 1 . .
 . 1 . . 1 . . .
 . 1 . 1 . . . .
@@ -239,11 +306,13 @@ void main() {
 . 1 . . . 1 . .
 . 1 . . . 1 . .
 . 1 1 1 1 . . .
-'''));
+'''),
+      );
     });
 
     test('mirror horizontal', () {
-      expect(makeSquareSet('''
+      expect(
+        makeSquareSet('''
 . 1 1 1 1 . . .
 . 1 . . . 1 . .
 . 1 . . . 1 . .
@@ -252,7 +321,8 @@ void main() {
 . 1 . 1 . . . .
 . 1 . . 1 . . .
 . 1 . . . 1 . .
-''').mirrorHorizontal(), makeSquareSet('''
+''').mirrorHorizontal(),
+        makeSquareSet('''
 . . . 1 1 1 1 .
 . . 1 . . . 1 .
 . . 1 . . . 1 .
@@ -261,7 +331,8 @@ void main() {
 . . . . 1 . 1 .
 . . . 1 . . 1 .
 . . 1 . . . 1 .
-'''));
+'''),
+      );
     });
   });
 }

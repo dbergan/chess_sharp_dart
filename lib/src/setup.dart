@@ -240,6 +240,9 @@ class Pockets {
   /// Chess𝄪 initial pocket
   static const chessDoubleSharp = Pockets(value: _doublesharpPocketsBySide);
 
+  /// CatchTheStars initial pocket
+  static const catchTheStars = Pockets(value: _catchthestarsPocketsBySide);
+
   /// Gets the total number of pieces in the pocket.
   int get size => value.values
       .fold(0, (acc, e) => acc + e.values.fold(0, (acc, e) => acc + e));
@@ -261,7 +264,8 @@ class Pockets {
         bySide[Role.bishop]! +
         bySide[Role.rook]! +
         bySide[Role.queen]! +
-        bySide[Role.king]!;
+        bySide[Role.king]! +
+        bySide[Role.star]!;
   }
 
   /// Returns diff of material value between [Side.white] and [Side.black].
@@ -274,12 +278,14 @@ class Pockets {
             3 * value[Side.white]![Role.bishop]! +
             5 * value[Side.white]![Role.rook]! +
             9 * value[Side.white]![Role.queen]! +
+            100 * value[Side.white]![Role.star]! +
             999 * value[Side.white]![Role.king]!) -
         (1 * value[Side.black]![Role.pawn]! +
             3 * value[Side.black]![Role.knight]! +
             3 * value[Side.black]![Role.bishop]! +
             5 * value[Side.black]![Role.rook]! +
             9 * value[Side.black]![Role.queen]! +
+            100 * value[Side.black]![Role.star]! +
             999 * value[Side.black]![Role.king]!);
   }
 
@@ -293,9 +299,25 @@ class Pockets {
         bySide[Role.king]! > 0;
   }
 
+  /// Checks whether this side has a non-Bishop piece
+  bool canCoverLightAndDark(Side side) {
+    final bySide = value[side]!;
+    return bySide[Role.pawn]! > 0 ||
+        bySide[Role.knight]! > 0 ||
+        bySide[Role.bishop]! > 1 ||
+        bySide[Role.rook]! > 0 ||
+        bySide[Role.queen]! > 0 ||
+        bySide[Role.king]! > 0;
+  }
+
   /// Checks whether this side has at least 1 pawn.
   bool hasPawn(Side side) {
     return value[side]![Role.pawn]! > 0;
+  }
+
+  /// Checks whether this side has at least 1 king.
+  bool hasKing(Side side) {
+    return value[side]![Role.king]! > 0;
   }
 
   /// Checks whether this side has only queens.
@@ -467,6 +489,7 @@ const ByRole<int> _emptyPocket = IMapConst({
   Role.rook: 0,
   Role.queen: 0,
   Role.king: 0,
+  Role.star: 0,
 });
 
 const BySide<ByRole<int>> _emptyPocketsBySide = IMapConst({
@@ -481,6 +504,7 @@ const ByRole<int> _tripleflatPocket = IMapConst({
   Role.rook: 0,
   Role.queen: 0,
   Role.king: 1,
+  Role.star: 0,
 });
 
 const ByRole<int> _doubleflatPocket = IMapConst({
@@ -490,6 +514,7 @@ const ByRole<int> _doubleflatPocket = IMapConst({
   Role.rook: 0,
   Role.queen: 1,
   Role.king: 1,
+  Role.star: 0,
 });
 
 const ByRole<int> _flatPocket = IMapConst({
@@ -499,6 +524,7 @@ const ByRole<int> _flatPocket = IMapConst({
   Role.rook: 2,
   Role.queen: 1,
   Role.king: 1,
+  Role.star: 0,
 });
 
 const ByRole<int> _sharpPocket = IMapConst({
@@ -508,6 +534,7 @@ const ByRole<int> _sharpPocket = IMapConst({
   Role.rook: 2,
   Role.queen: 1,
   Role.king: 1,
+  Role.star: 0,
 });
 
 const ByRole<int> _doublesharpPocket = IMapConst({
@@ -517,6 +544,27 @@ const ByRole<int> _doublesharpPocket = IMapConst({
   Role.rook: 2,
   Role.queen: 2,
   Role.king: 1,
+  Role.star: 0,
+});
+
+const ByRole<int> _catchthestarsWhitePocket = IMapConst({
+  Role.pawn: 0,
+  Role.knight: 0,
+  Role.bishop: 0,
+  Role.rook: 0,
+  Role.queen: 0,
+  Role.king: 1,
+  Role.star: 0,
+});
+
+const ByRole<int> _catchthestarsBlackPocket = IMapConst({
+  Role.pawn: 0,
+  Role.knight: 0,
+  Role.bishop: 0,
+  Role.rook: 0,
+  Role.queen: 0,
+  Role.king: 0,
+  Role.star: 5,
 });
 
 const BySide<ByRole<int>> _doubleflatPocketsBySide = IMapConst({
@@ -542,4 +590,9 @@ const BySide<ByRole<int>> _sharpPocketsBySide = IMapConst({
 const BySide<ByRole<int>> _doublesharpPocketsBySide = IMapConst({
   Side.white: _doublesharpPocket,
   Side.black: _doublesharpPocket,
+});
+
+const BySide<ByRole<int>> _catchthestarsPocketsBySide = IMapConst({
+  Side.white: _catchthestarsWhitePocket,
+  Side.black: _catchthestarsBlackPocket,
 });

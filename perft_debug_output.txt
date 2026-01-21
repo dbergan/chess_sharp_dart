@@ -1,0 +1,35 @@
+00:00 +0: loading V:/Users/dberg/GithubPrograms/chess_sharp_dart/test/debug_perft_test.dart
+00:00 +0: Compare perft and FastPerft on xfen-00
+a1b1: 21
+c1a1: 23
+c1b1: 23
+c1d1: 23
+c1e1: 22
+c1b2: 23
+e1d1: 23
+e1f1: 22
+e1g1: 23
+h1f1: 22
+h1g1: 23
+a2a3: 23
+a2a4: 23
+c2c3: 23
+c2c4: 23
+d2d3: 23
+d2d4: 23
+e2e3: 23
+e2e4: 23
+g2g3: 22
+g2g4: 22
+h2h3: 23
+h2h4: 23
+Manual baseline depth 2: 522
+FastPerft depth 2: 523
+00:00 +0 -1: Compare perft and FastPerft on xfen-00 [E]
+  Expected: <522>
+    Actual: <523>
+  
+  package:matcher                  expect
+  test\debug_perft_test.dart 32:5  main.<fn>
+  
+00:00 +0 -1: Some tests failed.

@@ -38,7 +38,8 @@ enum Role {
   bishop,
   rook,
   king,
-  queen;
+  queen,
+  star;
 
   /// Gets the role from a character.
   static Role? fromChar(String ch) {
@@ -55,6 +56,8 @@ enum Role {
         return Role.queen;
       case 'k':
         return Role.king;
+      case 's':
+        return Role.star;
       default:
         return null;
     }
@@ -68,6 +71,7 @@ enum Role {
         Role.rook => 'r',
         Role.queen => 'q',
         Role.king => 'k',
+        Role.star => 's',
       };
 
   /// Gets the role letter in uppercase (as for white piece in FEN notation).
@@ -78,6 +82,18 @@ enum Role {
         Role.rook => 'R',
         Role.queen => 'Q',
         Role.king => 'K',
+        Role.star => 'S',
+      };
+
+  /// Gets the relative value of the piece role.
+  int get value => switch (this) {
+        Role.pawn => 1,
+        Role.knight => 3,
+        Role.bishop => 3,
+        Role.rook => 5,
+        Role.queen => 9,
+        Role.star => 100,
+        Role.king => 999,
       };
 }
 
@@ -408,12 +424,14 @@ enum PieceKind {
   whiteRook(Side.white, Role.rook),
   whiteQueen(Side.white, Role.queen),
   whiteKing(Side.white, Role.king),
+  whiteStar(Side.white, Role.star),
   blackPawn(Side.black, Role.pawn),
   blackKnight(Side.black, Role.knight),
   blackBishop(Side.black, Role.bishop),
   blackRook(Side.black, Role.rook),
   blackQueen(Side.black, Role.queen),
-  blackKing(Side.black, Role.king);
+  blackKing(Side.black, Role.king),
+  blackStar(Side.black, Role.star);
 
   const PieceKind(this.side, this.role);
 
@@ -457,6 +475,8 @@ class Piece {
           color == Side.white ? PieceKind.whiteQueen : PieceKind.blackQueen,
         Role.king =>
           color == Side.white ? PieceKind.whiteKing : PieceKind.blackKing,
+        Role.star =>
+          color == Side.white ? PieceKind.whiteStar : PieceKind.blackStar,
       };
 
   /// Gets the FEN character of this piece.
@@ -505,6 +525,7 @@ class Piece {
   static const whiteRook = Piece(color: Side.white, role: Role.rook);
   static const whiteQueen = Piece(color: Side.white, role: Role.queen);
   static const whiteKing = Piece(color: Side.white, role: Role.king);
+  static const whiteStar = Piece(color: Side.white, role: Role.star);
 
   static const blackPawn = Piece(color: Side.black, role: Role.pawn);
   static const blackKnight = Piece(color: Side.black, role: Role.knight);
@@ -512,6 +533,7 @@ class Piece {
   static const blackRook = Piece(color: Side.black, role: Role.rook);
   static const blackQueen = Piece(color: Side.black, role: Role.queen);
   static const blackKing = Piece(color: Side.black, role: Role.king);
+  static const blackStar = Piece(color: Side.black, role: Role.star);
 }
 
 /// Base class for a chess move.
@@ -535,6 +557,7 @@ sealed class Move {
   ///
   /// Returns `null` if UCI string is not valid.
   static Move? parse(String str) {
+    if (str.length < 2) return null;
     if (str[1] == '@' && str.length == 4) {
       final role = Role.fromChar(str[0]);
       final to = Square.parse(str.substring(2));
@@ -789,6 +812,7 @@ enum Rule {
   chessTripleFlat, // A Chess♯ game with only the king in the reserve
   classicalChessSharp, // Classical chess with Chess# tournament scoring system
   preChess, // Benko's PreChess
+  catchTheStars, // Single player piece-learning game where the player moves pieces onto stars
   ;
 
   /// Parses a PGN header variant tag
@@ -916,6 +940,13 @@ enum Rule {
       case 'bronstein prechess':
       case 'bronstein pre-chess':
         return Rule.preChess;
+      case 'catch the stars':
+      case 'catch the star':
+      case 'catch-the-stars':
+      case 'catch-the-star':
+      case 'catchthestars':
+      case 'catchthestar':
+        return Rule.catchTheStars;
       default:
         return null;
     }

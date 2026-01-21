@@ -278,7 +278,8 @@ class PgnGame<T extends PgnNodeData> {
         rule == Rule.chessFlat ||
         rule == Rule.chessDoubleFlat ||
         rule == Rule.chessTripleFlat ||
-        rule == Rule.classicalChessSharp) {
+        rule == Rule.classicalChessSharp ||
+        rule == Rule.catchTheStars) {
       token.write(
           Outcome.toPgnStringChessSharp(Outcome.fromPgn(headers['Result'])));
     } else {

@@ -49,6 +49,8 @@ SquareSet attacks(Piece piece, Square square, SquareSet occupied) {
       return queenAttacks(square, occupied);
     case Role.king:
       return kingAttacks(square);
+    case Role.star:
+      return SquareSet.empty;
   }
 }
 

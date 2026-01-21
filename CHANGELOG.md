@@ -1,3 +1,5 @@
+## 0.1.4
+- Add variants PreChess, ClassicalChessSharp, and CatchTheStars
 ## 0.1.3
 - Add functions to PgnNodeData to simplify adding comments
 ## 0.1.2

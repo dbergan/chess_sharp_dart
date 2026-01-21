@@ -21,31 +21,44 @@ class Parser {
   }
 
   static Iterable<List<String>> _splitBlocks(List<String> lines) sync* {
-    final block = <String>[];
-    for (final line in lines) {
+    var block = <String>[];
+    for (var line in lines) {
+      line = line.trim();
       if (line.startsWith('#')) {
-        continue; // Ignore comments and blank lines
+        continue;
       }
 
-      if (line.trim().isEmpty && block.isNotEmpty) {
-        yield block.toList();
-        block.clear();
+      if (line.isEmpty) {
+        if (block.isNotEmpty) {
+          yield block;
+          block = [];
+        }
+        continue;
       }
 
-      if (line.isNotEmpty) {
-        block.add(line);
-      }
+      block.add(line);
     }
     if (block.isNotEmpty) {
-      yield block.toList();
+      yield block;
     }
   }
 
   static Perft _parsePerft(List<String> block) {
-    final id = block[0].substring(3);
-    final epd = block[1].substring(3).trim();
-    final cases = block.skip(2).map(_parseTestCase);
-    return Perft(id, epd, cases.toList());
+    String? id;
+    String? epd;
+    final cases = <TestCase>[];
+
+    for (final line in block) {
+      if (line.startsWith('id ')) {
+        id = line.substring(3).trim();
+      } else if (line.startsWith('epd ')) {
+        epd = line.substring(4).trim();
+      } else if (line.startsWith('perft ')) {
+        cases.add(_parseTestCase(line));
+      }
+    }
+
+    return Perft(id ?? 'unknown', epd ?? '', cases);
   }
 
   static TestCase _parseTestCase(String line) {
