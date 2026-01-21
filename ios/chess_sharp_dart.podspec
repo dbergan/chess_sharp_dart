@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Name' => 'dbergan@gmail.com' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*.{h,m,cpp,c}' # This catches bridge.cpp and engine_src
+  s.source_files     = 'Classes/**/*.{h,m,mm,cpp,c}' # This catches bridge.cpp and engine_src
   s.exclude_files    = ['Classes/engine_src/main.cpp', 'Classes/engine_src/web_main.cpp']
   s.public_header_files = 'Classes/ChessSharpDartPlugin.h'
   
