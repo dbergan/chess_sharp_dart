@@ -84,6 +84,7 @@ void main() {
     );
 
     final loadedPosition = ChessSharp.fromSetup(
+      rule: Rule.chessSharp,
       Setup.parseFen(
         '8/pppppppp/8/8/8/8/PPPPPPPP/8[NNBBRRKQnnbbrrkq] w - - 0 1',
       ),
@@ -541,6 +542,7 @@ void main() {
     () {
       // stalemate: king can't move
       Position a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('1r5k/8/8/8/8/8/7r/K7 w - - 0 1'),
       );
       printBoard(a);
@@ -550,6 +552,7 @@ void main() {
 
       // no stalemate: there's a piece in my pocket, and somewhere to place it
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('1r5k/8/8/8/8/8/7r/K7[Q] w - - 0 1'),
       );
       printBoard(a);
@@ -557,6 +560,7 @@ void main() {
 
       // stalemate: there's a piece in my pocket, but nowhere to place it
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('4k3/8/8/8/8/8/7q/qqqnKnqq[NNBBRRQ] w - - 0 1'),
       );
       printBoard(a);
@@ -564,6 +568,7 @@ void main() {
 
       // no stalemate: a pawn can promote
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('1r5k/3P4/8/8/8/8/7r/K7 w - - 0 1'),
       );
       printBoard(a);
@@ -571,6 +576,7 @@ void main() {
 
       // stalemate: the pawn is pinned
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('6rk/KP5r/7q/8/8/8/8/8 w - - 0 1'),
       );
       printBoard(a);
@@ -580,13 +586,17 @@ void main() {
 
       // no stalemate: I'm in check (and can get out of it)
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('K5rk/1P5r/1q6/8/8/8/8/8 w - - 0 1'),
       );
       printBoard(a);
       expect(a.outcome, null);
 
       // no stalemate: I'm in check (and can't get out of it)
-      a = ChessSharp.fromSetup(Setup.parseFen('K5rk/7r/8/8/8/8/8/8 w - - 0 1'));
+      a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
+        Setup.parseFen('K5rk/7r/8/8/8/8/8/8 w - - 0 1'),
+      );
       printBoard(a);
       expect(a.outcome, null);
     },
@@ -596,6 +606,7 @@ void main() {
     () {
       // fen with 100 half-moves made
       Position a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('4nnbk/8/8/8/8/8/8/KBNN4 w - - 100 100'),
       );
       printBoard(a);
@@ -606,6 +617,7 @@ void main() {
       // fen with 99 half-moves made (move last one manually)
       // trigger the impasse while walking into check
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('4nnbk/8/8/8/8/8/8/KBNN4 w - - 99 100'),
       );
       printBoard(a);
@@ -617,6 +629,7 @@ void main() {
 
       // fen with 100 half-moves made, black more material
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('4nnbk/8/8/8/8/8/8/KBN5 w - - 100 100'),
       );
       printBoard(a);
@@ -626,6 +639,7 @@ void main() {
 
       // fen with 100 half-moves made, white more material
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('5nbk/8/8/8/8/8/8/KBNN4 w - - 100 100'),
       );
       printBoard(a);
@@ -636,6 +650,7 @@ void main() {
       // fen with 100 half-moves made, white more material, but black has a queen in the pocket
       // (pieces in the pocket don't count for material points)
       a = ChessSharp.fromSetup(
+        rule: Rule.chessSharp,
         Setup.parseFen('5nbk/8/8/8/8/8/8/KBNN4[q] w - - 100 100'),
       );
       printBoard(a);
@@ -841,6 +856,7 @@ void main() {
   });
   test('Chess♯ - test randomMove and randomUci', () {
     final Position a = ChessSharp.fromSetup(
+      rule: Rule.chessSharp,
       Setup.parseFen('k5q1/3p4/8/b2Q3n/8/8/8/K6r[NnQq] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -923,6 +939,7 @@ void main() {
 
   test('Chess♯ - test cpuMove', () async {
     final Position a = ChessSharp.fromSetup(
+      rule: Rule.chessSharp,
       Setup.parseFen(
         '4r1k1/pp3ppp/2p1r1n1/3pp1P1/6Rn/2P1PP1P/PP1P4/KB2N2R[QBqb] b - - 0 1',
       ),

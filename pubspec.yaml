@@ -13,6 +13,12 @@ platforms:
 environment:
   sdk: ">=3.10.0 <4.0.0"
 
+flutter:
+  plugin:
+    platforms:
+      ios:
+        pluginClass: ChessSharpDartPlugin
+
 dependencies:
   fast_immutable_collections: ^11.0.0
   ffi: ^2.1.0

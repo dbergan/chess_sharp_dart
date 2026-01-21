@@ -64,6 +64,7 @@ void main() {
     expect(ChessSharp.catchTheStars.fen, '8/8/8/8/8/8/8/8[Ksssss] w - - 0 1');
 
     final loadedPosition = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/8[Ksssss] w - - 0 1'),
     );
     expect(ChessSharp.catchTheStars.fen, loadedPosition.fen);
@@ -544,7 +545,7 @@ void main() {
       // B at a2 (light), s at a1 (dark)
 
       expect(
-        () => ChessSharp.fromSetup(setup),
+        () => ChessSharp.fromSetup(rule: Rule.catchTheStars, setup),
         throwsA(isA<PositionSetupException>()),
       );
     },
@@ -556,7 +557,7 @@ void main() {
       // B at a2 (light), s at b1 (dark)
       final setup = Setup.parseFen('8/8/8/8/8/8/B7/1s6[ss] w - - 0 1');
 
-      final pos = ChessSharp.fromSetup(setup);
+      final pos = ChessSharp.fromSetup(rule: Rule.catchTheStars, setup);
       expect(pos, isA<ChessSharp>());
     },
   );
@@ -565,7 +566,7 @@ void main() {
     final setup = Setup.parseFen('8/8/8/8/8/8/BB6/ss6[ss] w - - 0 1');
     // B at a2, b2; s at a1, b1
 
-    final pos = ChessSharp.fromSetup(setup);
+    final pos = ChessSharp.fromSetup(rule: Rule.catchTheStars, setup);
     expect(pos, isA<ChessSharp>());
   });
 
@@ -573,7 +574,7 @@ void main() {
     final setup = Setup.parseFen('8/8/8/8/8/8/BK6/s7[ss] w - - 0 1');
     // B at a2 (light), K at b2 (dark), s at a1 (dark)
 
-    final pos = ChessSharp.fromSetup(setup);
+    final pos = ChessSharp.fromSetup(rule: Rule.catchTheStars, setup);
     expect(pos, isA<ChessSharp>());
   });
 
@@ -581,12 +582,13 @@ void main() {
     final setup = Setup.parseFen('8/8/8/8/8/8/B7/s7[Pss] w - - 0 1');
     // B at a2 (light), s at a1 (dark), Pawn in pocket
 
-    final pos = ChessSharp.fromSetup(setup);
+    final pos = ChessSharp.fromSetup(rule: Rule.catchTheStars, setup);
     expect(pos, isA<ChessSharp>());
   });
 
   test('☆ 1 Bishop - test all legal moves and drops from the beginning', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/8[Bs] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -704,6 +706,7 @@ void main() {
   });
   test('☆ 1 Knight - test all legal moves and drops', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/8[Ns] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -721,6 +724,7 @@ void main() {
 
   test('☆ 1 Rook - test all legal moves and drops', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/8[Rs] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -738,6 +742,7 @@ void main() {
 
   test('☆ 1 Queen - test all legal moves and drops', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/8[Qss] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -761,6 +766,7 @@ void main() {
 
   test('☆ 1 Pawn - test all legal moves and drops', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/5s2/8/4P3/8[] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -778,6 +784,7 @@ void main() {
 
   test('☆ Multi-star level', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/1N6[sss] b - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -804,6 +811,7 @@ void main() {
 
   test('☆ Star placement restriction (only dark-squared bishops)', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('1s6/8/8/8/8/8/8/B1B5[ssss] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -832,6 +840,7 @@ void main() {
 
   test('☆ Bishop in pocket to catch stars on other color', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('1s6/8/8/8/8/8/8/B7[Bssss] w - - 0 1'),
     );
     // White has dark-squared bishop on a1, and 1 Bishop in pocket.
@@ -905,6 +914,7 @@ void main() {
 
   test('☆ Two Bishops in pocket', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/8[BBss] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -943,6 +953,7 @@ void main() {
 
   test('☆ Pawn promotion to Queen to catch stars', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/5s2/8/4P3/8[ssss] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);
@@ -997,6 +1008,7 @@ void main() {
 
   test('☆ Queen placement restriction', () {
     Position a = ChessSharp.fromSetup(
+      rule: Rule.catchTheStars,
       Setup.parseFen('8/8/8/8/8/8/8/8[BKQsssss] w - - 0 1'),
     );
     printBoard(a, printLegalMoves: true);

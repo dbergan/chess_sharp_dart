@@ -15,6 +15,7 @@ abstract class Position {
   static Sharpfish? _cpuEngine;
 
   const Position({
+    required this.rule,
     required this.board,
     this.pockets,
     required this.turn,
@@ -23,6 +24,9 @@ abstract class Position {
     required this.halfmoves,
     required this.fullmoves,
   });
+
+  /// The [Rule] of this position.
+  final Rule rule;
 
   /// Piece positions on the board.
   final Board board;
@@ -45,11 +49,9 @@ abstract class Position {
   /// Current move number.
   final int fullmoves;
 
-  /// The [Rule] of this position.
-  Rule get rule;
-
   /// Creates a copy of this position with some fields changed.
   Position copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -112,7 +114,7 @@ abstract class Position {
       case Rule.chessDoubleSharp:
       case Rule.chessDoubleFlat:
       case Rule.chessTripleFlat:
-        return ChessSharp.fromSetup(setup);
+        return ChessSharp.fromSetup(setup, rule: rule);
       case Rule.classicalChessSharp:
         return ClassicalChessSharp.fromSetup(
           setup,
@@ -124,7 +126,7 @@ abstract class Position {
           ignoreImpossibleCheck: ignoreImpossibleCheck,
         );
       case Rule.catchTheStars:
-        return ChessSharp.fromSetup(setup);
+        return ChessSharp.fromSetup(setup, rule: rule);
     }
   }
 
@@ -528,6 +530,10 @@ abstract class Position {
         variantName = 'chess-double-flat';
       case Rule.chessTripleFlat:
         variantName = 'chess-triple-flat';
+      case Rule.preChess:
+        variantName = 'pre-chess';
+      case Rule.classicalChessSharp:
+        variantName = 'classical-chess-sharp';
       default:
         break;
     }
@@ -1048,10 +1054,13 @@ abstract class Position {
         return copyWith(
           halfmoves: isCapture || piece.role == Role.pawn ? 0 : halfmoves + 1,
           fullmoves: turn == Side.black ? fullmoves + 1 : fullmoves,
-          // Chess♯ does not put captured pieces in the pocket the way Crazyhouse does.
+          // Chess♯ and PreChess do not put captured pieces in the pocket the way Crazyhouse does.
           // (The major pieces start in the pocket for the sake of opening variety.
           // After that, when they die, they die, just like classical chess.)
-          pockets: (this is! ChessSharp && capturedPiece != null)
+          pockets:
+              (this is! ChessSharp &&
+                  this is! PreChess &&
+                  capturedPiece != null)
               ? pockets?.increment(
                   capturedPiece.color.opposite,
                   capturedPiece.promoted ? Role.pawn : capturedPiece.role,
@@ -1486,11 +1495,8 @@ abstract class Position {
 /// A standard chess position.
 @immutable
 abstract class Chess extends Position {
-  @override
-  Rule get rule => Rule.chess;
-
-  /// Creates a new [Chess] position.
   const factory Chess({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -1501,6 +1507,7 @@ abstract class Chess extends Position {
   }) = _Chess;
 
   const Chess._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -1517,6 +1524,7 @@ abstract class Chess extends Position {
   /// Optionally pass [ignoreImpossibleCheck] if you want to skip that requirement.
   factory Chess.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Chess(
+      rule: Rule.chess,
       board: setup.board,
       pockets: setup.pockets,
       turn: setup.turn,
@@ -1531,6 +1539,7 @@ abstract class Chess extends Position {
 
   /// The initial position of a standard chess game.
   static final initial = Chess(
+    rule: Rule.chess,
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -1548,11 +1557,8 @@ abstract class Chess extends Position {
 /// A variant of chess where you lose all your pieces or get stalemated to win.
 @immutable
 abstract class Antichess extends Position {
-  @override
-  Rule get rule => Rule.antichess;
-
-  /// Creates a new [Antichess] position.
   const factory Antichess({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -1563,6 +1569,7 @@ abstract class Antichess extends Position {
   }) = _Antichess;
 
   const Antichess._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -1580,6 +1587,7 @@ abstract class Antichess extends Position {
   /// requirement.
   factory Antichess.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Antichess(
+      rule: Rule.antichess,
       board: setup.board,
       pockets: setup.pockets,
       turn: setup.turn,
@@ -1594,6 +1602,7 @@ abstract class Antichess extends Position {
 
   /// The initial position of an Antichess game.
   static final initial = Antichess(
+    rule: Rule.antichess,
     board: Board.standard,
     turn: Side.white,
     castles: Castles.empty,
@@ -1691,10 +1700,8 @@ abstract class Antichess extends Position {
 /// A variant of chess where captures cause an explosion to the surrounding pieces.
 @immutable
 abstract class Atomic extends Position {
-  @override
-  Rule get rule => Rule.atomic;
-
   const factory Atomic({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -1705,6 +1712,7 @@ abstract class Atomic extends Position {
   }) = _Atomic;
 
   const Atomic._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -1722,6 +1730,7 @@ abstract class Atomic extends Position {
   /// requirement.
   factory Atomic.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Atomic(
+      rule: Rule.atomic,
       board: setup.board,
       pockets: setup.pockets,
       turn: setup.turn,
@@ -1736,6 +1745,7 @@ abstract class Atomic extends Position {
 
   /// The initial position of an Atomic game.
   static final initial = Atomic(
+    rule: Rule.atomic,
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -1918,11 +1928,8 @@ abstract class Atomic extends Position {
 /// A variant where captured pieces can be dropped back on the board instead of moving a piece.
 @immutable
 abstract class Crazyhouse extends Position {
-  @override
-  Rule get rule => Rule.crazyhouse;
-
-  /// Creates a new [Crazyhouse] position.
   const factory Crazyhouse({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -1933,6 +1940,7 @@ abstract class Crazyhouse extends Position {
   }) = _Crazyhouse;
 
   const Crazyhouse._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -1950,6 +1958,7 @@ abstract class Crazyhouse extends Position {
   /// requirement.
   factory Crazyhouse.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Crazyhouse(
+      rule: Rule.crazyhouse,
       board: setup.board.withPromoted(
         setup.board.promoted
             .intersect(setup.board.occupied)
@@ -1969,6 +1978,7 @@ abstract class Crazyhouse extends Position {
 
   /// The initial position of a Crazyhouse game.
   static final initial = Crazyhouse(
+    rule: Rule.crazyhouse,
     board: Board.standard,
     pockets: Pockets.empty,
     turn: Side.white,
@@ -2040,11 +2050,8 @@ abstract class Crazyhouse extends Position {
 /// https://chess-sharp.games/ChessSharp_Rules.pdf
 @immutable
 abstract class ChessSharp extends Position {
-  @override
-  Rule get rule => Rule.chessSharp;
-
-  /// Creates a new [ChessSharp] position.
   const factory ChessSharp({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -2055,6 +2062,7 @@ abstract class ChessSharp extends Position {
   }) = _ChessSharp;
 
   const ChessSharp._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -2070,8 +2078,9 @@ abstract class ChessSharp extends Position {
   /// requirements.
   /// Optionally pass [ignoreImpossibleCheck] if you want to skip that
   /// requirement.
-  factory ChessSharp.fromSetup(Setup setup) {
+  factory ChessSharp.fromSetup(Setup setup, {required Rule rule}) {
     final pos = ChessSharp(
+      rule: rule,
       board: setup.board,
       pockets: setup.pockets ?? Pockets.empty,
       turn: setup.turn,
@@ -2084,6 +2093,7 @@ abstract class ChessSharp extends Position {
   }
 
   static final initial = ChessSharp(
+    rule: Rule.chessSharp,
     board: Board.chessSharp,
     pockets: Pockets.chessSharp,
     turn: Side.white,
@@ -2093,6 +2103,7 @@ abstract class ChessSharp extends Position {
   );
 
   static final chessFlat = ChessSharp(
+    rule: Rule.chessFlat,
     board: Board.chessSharp,
     pockets: Pockets.chessFlat,
     turn: Side.white,
@@ -2102,6 +2113,7 @@ abstract class ChessSharp extends Position {
   );
 
   static final chessDoubleSharp = ChessSharp(
+    rule: Rule.chessDoubleSharp,
     board: Board.chessSharp,
     pockets: Pockets.chessDoubleSharp,
     turn: Side.white,
@@ -2111,6 +2123,7 @@ abstract class ChessSharp extends Position {
   );
 
   static final chessDoubleFlat = ChessSharp(
+    rule: Rule.chessDoubleFlat,
     board: Board.chessSharp,
     pockets: Pockets.chessDoubleFlat,
     turn: Side.white,
@@ -2120,6 +2133,7 @@ abstract class ChessSharp extends Position {
   );
 
   static final chessTripleFlat = ChessSharp(
+    rule: Rule.chessTripleFlat,
     board: Board.chessSharp,
     pockets: Pockets.chessTripleFlat,
     turn: Side.white,
@@ -2129,6 +2143,7 @@ abstract class ChessSharp extends Position {
   );
 
   static const catchTheStars = ChessSharp(
+    rule: Rule.catchTheStars,
     board: Board.catchTheStars,
     pockets: Pockets.catchTheStars,
     turn: Side.white,
@@ -2229,8 +2244,9 @@ abstract class ChessSharp extends Position {
 
   @override
   bool get isVariantEnd =>
-      ((board.kings.size + pockets!.count(Role.king)) < 2) &&
-      ((board.stars.size + pockets!.count(Role.star)) < 1);
+      isImpasse ||
+      (((board.kings.size + pockets!.count(Role.king)) < 2) &&
+          ((board.stars.size + pockets!.count(Role.star)) < 1));
 
   @override
   void validate({bool? ignoreImpossibleCheck}) {
@@ -2326,11 +2342,7 @@ abstract class ChessSharp extends Position {
     // Chess♯ notation does not use check (+) or checkmate (#) symbols
     final san = _makeSanWithoutSuffix(move);
     final newPos = playUnchecked(move);
-    if (isLegal(move)) {
-      return (newPos, san);
-    } else {
-      throw PlayException('Invalid move $move on position $fen');
-    }
+    return (newPos, san);
   }
 }
 
@@ -2338,11 +2350,8 @@ abstract class ChessSharp extends Position {
 /// of the board.
 @immutable
 abstract class KingOfTheHill extends Position {
-  @override
-  Rule get rule => Rule.kingofthehill;
-
-  /// Creates a new [KingOfTheHill] position.
   const factory KingOfTheHill({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -2353,6 +2362,7 @@ abstract class KingOfTheHill extends Position {
   }) = _KingOfTheHill;
 
   const KingOfTheHill._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -2370,6 +2380,7 @@ abstract class KingOfTheHill extends Position {
   /// requirement.
   factory KingOfTheHill.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = KingOfTheHill(
+      rule: Rule.kingofthehill,
       board: setup.board,
       pockets: setup.pockets,
       turn: setup.turn,
@@ -2384,6 +2395,7 @@ abstract class KingOfTheHill extends Position {
 
   /// The initial position of a KingOfTheHill game.
   static final initial = KingOfTheHill(
+    rule: Rule.kingofthehill,
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -2412,11 +2424,8 @@ abstract class KingOfTheHill extends Position {
 /// into the third check.
 @immutable
 abstract class ThreeCheck extends Position {
-  @override
-  Rule get rule => Rule.threecheck;
-
-  /// Creates a new [ThreeCheck] position.
   const factory ThreeCheck({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -2428,6 +2437,7 @@ abstract class ThreeCheck extends Position {
   }) = _ThreeCheck;
 
   const ThreeCheck._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -2449,6 +2459,7 @@ abstract class ThreeCheck extends Position {
       throw PositionSetupException.variant;
     } else {
       final pos = ThreeCheck(
+        rule: Rule.threecheck,
         board: setup.board,
         turn: setup.turn,
         castles: Castles.fromSetup(setup),
@@ -2467,15 +2478,16 @@ abstract class ThreeCheck extends Position {
 
   /// The initial position of a ThreeCheck game.
   static final initial = ThreeCheck(
+    rule: Rule.threecheck,
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
     halfmoves: 0,
     fullmoves: 1,
-    remainingChecks: _defaultRemainingChecks,
+    remainingChecks: defaultRemainingChecks,
   );
 
-  static const _defaultRemainingChecks = (3, 3);
+  static const defaultRemainingChecks = (3, 3);
 
   @override
   bool get isVariantEnd => remainingChecks.$1 <= 0 || remainingChecks.$2 <= 0;
@@ -2528,11 +2540,8 @@ abstract class ThreeCheck extends Position {
 /// A variant where the goal is to put your king on the eigth rank.
 @immutable
 abstract class RacingKings extends Position {
-  @override
-  Rule get rule => Rule.racingKings;
-
-  /// Creates a new [RacingKings] position.
   const factory RacingKings({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -2543,6 +2552,7 @@ abstract class RacingKings extends Position {
   }) = _RacingKings;
 
   const RacingKings._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -2560,6 +2570,7 @@ abstract class RacingKings extends Position {
   /// requirement.
   factory RacingKings.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = RacingKings(
+      rule: Rule.racingKings,
       board: setup.board,
       turn: setup.turn,
       castles: Castles.empty,
@@ -2572,6 +2583,7 @@ abstract class RacingKings extends Position {
 
   /// The initial position of a RacingKings game.
   static final initial = RacingKings(
+    rule: Rule.racingKings,
     board: Board.racingKings,
     turn: Side.white,
     castles: Castles.empty,
@@ -2651,11 +2663,8 @@ abstract class RacingKings extends Position {
 /// A variant where white has 36 pawns and black needs to destroy the Horde to win.
 @immutable
 abstract class Horde extends Position {
-  @override
-  Rule get rule => Rule.horde;
-
-  /// Creates a new [Horde] position.
   const factory Horde({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -2666,6 +2675,7 @@ abstract class Horde extends Position {
   }) = _Horde;
 
   const Horde._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -2683,6 +2693,7 @@ abstract class Horde extends Position {
   /// requirement.
   factory Horde.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = Horde(
+      rule: Rule.horde,
       board: setup.board,
       turn: setup.turn,
       castles: Castles.fromSetup(setup),
@@ -2696,6 +2707,7 @@ abstract class Horde extends Position {
 
   /// The initial position of the Horde variant.
   static final initial = Horde(
+    rule: Rule.horde,
     board: Board.horde,
     turn: Side.white,
     castles: Castles.horde,
@@ -2731,7 +2743,7 @@ abstract class Horde extends Position {
   }
 
   // get the number of light or dark square bishops
-  int _hordeBishops(Side side, SquareColor sqColor) {
+  int hordeBishops(Side side, SquareColor sqColor) {
     if (sqColor == SquareColor.light) {
       return board
           .piecesOf(side, Role.bishop)
@@ -2745,20 +2757,20 @@ abstract class Horde extends Position {
         .size;
   }
 
-  SquareColor _hordeBishopColor(Side side) {
-    if (_hordeBishops(side, SquareColor.light) >= 1) {
+  SquareColor hordeBishopColor0(Side side) {
+    if (hordeBishops(side, SquareColor.light) >= 1) {
       return SquareColor.light;
     }
     return SquareColor.dark;
   }
 
-  bool _hasBishopPair(Side side) {
+  bool hasBishopPair(Side side) {
     final bishops = board.piecesOf(side, Role.bishop);
     return bishops.isIntersected(SquareSet.darkSquares) &&
         bishops.isIntersected(SquareSet.lightSquares);
   }
 
-  int _pieceOfRoleNot(int piecesNum, int rolePieces) => piecesNum - rolePieces;
+  int pieceOfRoleNot(int piecesNum, int rolePieces) => piecesNum - rolePieces;
 
   @override
   bool hasInsufficientMaterial(Side side) {
@@ -2773,8 +2785,8 @@ abstract class Horde extends Position {
         board.piecesOf(side, Role.rook).size +
         board.piecesOf(side, Role.queen).size +
         board.piecesOf(side, Role.knight).size +
-        math.min(_hordeBishops(side, SquareColor.light), 2) +
-        math.min(_hordeBishops(side, SquareColor.dark), 2);
+        math.min(hordeBishops(side, SquareColor.light), 2) +
+        math.min(hordeBishops(side, SquareColor.dark), 2);
 
     if (hordeNum == 0) {
       return true;
@@ -2786,7 +2798,7 @@ abstract class Horde extends Position {
     }
 
     final hordeMap = board.materialCount(side);
-    final hordeBishopColor = _hordeBishopColor(side);
+    final hordeBishopColor = hordeBishopColor0(side);
     final piecesMap = board.materialCount(side.opposite);
     final piecesNum = board.bySide(side.opposite).size;
 
@@ -2807,9 +2819,9 @@ abstract class Horde extends Position {
       return hordeNum == 2 &&
           hordeMap[Role.rook]! == 1 &&
           hordeMap[Role.bishop]! == 1 &&
-          (_pieceOfRoleNot(
+          (pieceOfRoleNot(
                 piecesNum,
-                _hordeBishops(side.opposite, hordeBishopColor),
+                hordeBishops(side.opposite, hordeBishopColor),
               ) ==
               1);
     }
@@ -2829,8 +2841,8 @@ abstract class Horde extends Position {
 
         return !(piecesMap[Role.pawn]! >= 1 ||
             piecesMap[Role.rook]! >= 1 ||
-            _hordeBishops(side.opposite, SquareColor.light) >= 2 ||
-            _hordeBishops(side, SquareColor.dark) >= 2);
+            hordeBishops(side.opposite, SquareColor.light) >= 2 ||
+            hordeBishops(side, SquareColor.dark) >= 2);
       } else if (hordeMap[Role.pawn] == 1) {
         // Promote the pawn to a queen or a knight and check whether white can mate.
         final pawnSquare = board.piecesOf(side, Role.pawn).last;
@@ -2871,8 +2883,8 @@ abstract class Horde extends Position {
         // a pawn/opposite-color-bishop on A4, a pawn/opposite-color-bishop on
         // B3, a pawn/bishop/rook/queen on A2 and any other piece on B2.
 
-        return !(_hordeBishops(side.opposite, hordeBishopColor.opposite) >= 2 ||
-            (_hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1 &&
+        return !(hordeBishops(side.opposite, hordeBishopColor.opposite) >= 2 ||
+            (hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1 &&
                 piecesMap[Role.pawn]! >= 1) ||
             piecesMap[Role.pawn]! >= 2);
       } else if (hordeMap[Role.knight] == 1) {
@@ -2893,18 +2905,17 @@ abstract class Horde extends Position {
                 (piecesMap[Role.rook]! >= 1 && piecesMap[Role.pawn]! >= 1) ||
                 (piecesMap[Role.knight]! >= 1 && piecesMap[Role.pawn]! >= 1) ||
                 (piecesMap[Role.bishop]! >= 1 && piecesMap[Role.pawn]! >= 1) ||
-                (_hasBishopPair(side.opposite) &&
-                    piecesMap[Role.pawn]! >= 1)) &&
-            (_hordeBishops(side.opposite, SquareColor.light) < 2 ||
-                (_pieceOfRoleNot(
+                (hasBishopPair(side.opposite) && piecesMap[Role.pawn]! >= 1)) &&
+            (hordeBishops(side.opposite, SquareColor.light) < 2 ||
+                (pieceOfRoleNot(
                       piecesNum,
-                      _hordeBishops(side.opposite, SquareColor.light),
+                      hordeBishops(side.opposite, SquareColor.light),
                     ) >=
                     3)) &&
-            (_hordeBishops(side.opposite, SquareColor.dark) < 2 ||
-                (_pieceOfRoleNot(
+            (hordeBishops(side.opposite, SquareColor.dark) < 2 ||
+                (pieceOfRoleNot(
                       piecesNum,
-                      _hordeBishops(side.opposite, SquareColor.dark),
+                      hordeBishops(side.opposite, SquareColor.dark),
                     ) >=
                     3)));
       }
@@ -2921,7 +2932,7 @@ abstract class Horde extends Position {
                 piecesMap[Role.bishop]! +
                 piecesMap[Role.knight]! <
             1;
-      } else if (_hasBishopPair(side)) {
+      } else if (hasBishopPair(side)) {
         return !(piecesMap[Role.pawn]! >= 1 ||
             piecesMap[Role.bishop]! >= 1 ||
             (piecesMap[Role.knight]! >= 1 &&
@@ -2929,10 +2940,10 @@ abstract class Horde extends Position {
       } else if (hordeMap[Role.bishop]! >= 1 && hordeMap[Role.knight]! >= 1) {
         // horde has a bishop and a knight
         return !(piecesMap[Role.pawn]! >= 1 ||
-            _hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1 ||
-            (_pieceOfRoleNot(
+            hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1 ||
+            (pieceOfRoleNot(
                   piecesNum,
-                  _hordeBishops(side.opposite, hordeBishopColor),
+                  hordeBishops(side.opposite, hordeBishopColor),
                 ) >=
                 3));
       } else {
@@ -2947,11 +2958,11 @@ abstract class Horde extends Position {
         // have a pawn and an opposite color bishop.
 
         return !((piecesMap[Role.pawn]! >= 1 &&
-                _hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1) ||
+                hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1) ||
             (piecesMap[Role.pawn]! >= 1 && piecesMap[Role.knight]! >= 1) ||
-            (_hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1 &&
+            (hordeBishops(side.opposite, hordeBishopColor.opposite) >= 1 &&
                 piecesMap[Role.knight]! >= 1) ||
-            (_hordeBishops(side.opposite, hordeBishopColor.opposite) >= 2) ||
+            (hordeBishops(side.opposite, hordeBishopColor.opposite) >= 2) ||
             piecesMap[Role.knight]! >= 2 ||
             piecesMap[Role.pawn]! >= 2);
       }
@@ -2961,7 +2972,7 @@ abstract class Horde extends Position {
 
       if ((hordeMap[Role.knight] == 2 && hordeMap[Role.bishop] == 1) ||
           hordeMap[Role.knight] == 3 ||
-          _hasBishopPair(side)) {
+          hasBishopPair(side)) {
         return false;
       } else {
         return piecesNum == 1;
@@ -2985,11 +2996,8 @@ abstract class Horde extends Position {
 /// A variant of chess that uses the Chess♯ tournament scoring system.
 @immutable
 abstract class ClassicalChessSharp extends Chess {
-  @override
-  Rule get rule => Rule.classicalChessSharp;
-
-  /// Creates a new [ClassicalChessSharp] position.
   const factory ClassicalChessSharp({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -3000,6 +3008,7 @@ abstract class ClassicalChessSharp extends Chess {
   }) = _ClassicalChessSharp;
 
   const ClassicalChessSharp._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3015,6 +3024,7 @@ abstract class ClassicalChessSharp extends Chess {
     bool? ignoreImpossibleCheck,
   }) {
     final pos = ClassicalChessSharp(
+      rule: Rule.classicalChessSharp,
       board: setup.board,
       pockets: setup.pockets,
       turn: setup.turn,
@@ -3051,6 +3061,7 @@ abstract class ClassicalChessSharp extends Chess {
 
   /// The initial position of a ClassicalChessSharp game.
   static final initial = ClassicalChessSharp(
+    rule: Rule.classicalChessSharp,
     board: Board.standard,
     turn: Side.white,
     castles: Castles.standard,
@@ -3062,11 +3073,8 @@ abstract class ClassicalChessSharp extends Chess {
 /// Benko's Pre-Chess.
 @immutable
 abstract class PreChess extends Chess {
-  @override
-  Rule get rule => Rule.preChess;
-
-  /// Creates a new [PreChess] position.
   const factory PreChess({
+    required Rule rule,
     required Board board,
     Pockets? pockets,
     required Side turn,
@@ -3077,6 +3085,7 @@ abstract class PreChess extends Chess {
   }) = _PreChess;
 
   const PreChess._({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3089,6 +3098,7 @@ abstract class PreChess extends Chess {
   /// Sets up a playable [PreChess] position.
   factory PreChess.fromSetup(Setup setup, {bool? ignoreImpossibleCheck}) {
     final pos = PreChess(
+      rule: Rule.preChess,
       board: setup.board,
       pockets: setup.pockets ?? Pockets.empty,
       turn: setup.turn,
@@ -3108,6 +3118,7 @@ abstract class PreChess extends Chess {
 
   /// The initial position of a Pre-Chess game.
   static final initial = PreChess(
+    rule: Rule.preChess,
     board: Board.chessSharp,
     pockets: Pockets.chessSharp,
     turn: Side.white,
@@ -3392,17 +3403,19 @@ SquareSet _pseudoLegalMoves(Position pos, Square square, _Context context) {
 
 class _Chess extends Chess {
   const _Chess({
+    required super.rule,
     required super.board,
+    super.pockets,
     required super.turn,
     required super.castles,
+    super.epSquare,
     required super.halfmoves,
     required super.fullmoves,
-    super.pockets,
-    super.epSquare,
   }) : super._();
 
   @override
   Chess copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3413,6 +3426,7 @@ class _Chess extends Chess {
     (int, int)? remainingChecks,
   }) {
     return Chess(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3430,6 +3444,7 @@ class _Chess extends Chess {
 
 class _Antichess extends Antichess {
   const _Antichess({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3441,6 +3456,7 @@ class _Antichess extends Antichess {
 
   @override
   Antichess copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3451,6 +3467,7 @@ class _Antichess extends Antichess {
     (int, int)? remainingChecks,
   }) {
     return Antichess(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3468,6 +3485,7 @@ class _Antichess extends Antichess {
 
 class _Atomic extends Atomic {
   const _Atomic({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3479,6 +3497,7 @@ class _Atomic extends Atomic {
 
   @override
   Atomic copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3489,6 +3508,7 @@ class _Atomic extends Atomic {
     (int, int)? remainingChecks,
   }) {
     return Atomic(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3506,6 +3526,7 @@ class _Atomic extends Atomic {
 
 class _Crazyhouse extends Crazyhouse {
   const _Crazyhouse({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3517,6 +3538,7 @@ class _Crazyhouse extends Crazyhouse {
 
   @override
   Crazyhouse copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3528,6 +3550,7 @@ class _Crazyhouse extends Crazyhouse {
   }) {
     // print('Crazyhouse.copyWith: epSquare parameter is $epSquare');
     return Crazyhouse(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3545,6 +3568,7 @@ class _Crazyhouse extends Crazyhouse {
 
 class _ChessSharp extends ChessSharp {
   const _ChessSharp({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3556,6 +3580,7 @@ class _ChessSharp extends ChessSharp {
 
   @override
   ChessSharp copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3566,6 +3591,7 @@ class _ChessSharp extends ChessSharp {
     (int, int)? remainingChecks,
   }) {
     return ChessSharp(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3583,6 +3609,7 @@ class _ChessSharp extends ChessSharp {
 
 class _KingOfTheHill extends KingOfTheHill {
   const _KingOfTheHill({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3594,6 +3621,7 @@ class _KingOfTheHill extends KingOfTheHill {
 
   @override
   KingOfTheHill copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3604,6 +3632,7 @@ class _KingOfTheHill extends KingOfTheHill {
     (int, int)? remainingChecks,
   }) {
     return KingOfTheHill(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3621,6 +3650,7 @@ class _KingOfTheHill extends KingOfTheHill {
 
 class _ThreeCheck extends ThreeCheck {
   const _ThreeCheck({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3633,6 +3663,7 @@ class _ThreeCheck extends ThreeCheck {
 
   @override
   ThreeCheck copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3643,6 +3674,7 @@ class _ThreeCheck extends ThreeCheck {
     (int, int)? remainingChecks,
   }) {
     return ThreeCheck(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3661,6 +3693,7 @@ class _ThreeCheck extends ThreeCheck {
 
 class _RacingKings extends RacingKings {
   const _RacingKings({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3672,6 +3705,7 @@ class _RacingKings extends RacingKings {
 
   @override
   RacingKings copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3682,6 +3716,7 @@ class _RacingKings extends RacingKings {
     (int, int)? remainingChecks,
   }) {
     return RacingKings(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3699,6 +3734,7 @@ class _RacingKings extends RacingKings {
 
 class _Horde extends Horde {
   const _Horde({
+    required super.rule,
     required super.board,
     super.pockets,
     required super.turn,
@@ -3710,6 +3746,7 @@ class _Horde extends Horde {
 
   @override
   Horde copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3720,6 +3757,7 @@ class _Horde extends Horde {
     (int, int)? remainingChecks,
   }) {
     return Horde(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3737,6 +3775,7 @@ class _Horde extends Horde {
 
 class _ClassicalChessSharp extends ClassicalChessSharp {
   const _ClassicalChessSharp({
+    required super.rule,
     required super.board,
     required super.turn,
     required super.castles,
@@ -3748,6 +3787,7 @@ class _ClassicalChessSharp extends ClassicalChessSharp {
 
   @override
   ClassicalChessSharp copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3758,6 +3798,7 @@ class _ClassicalChessSharp extends ClassicalChessSharp {
     (int, int)? remainingChecks,
   }) {
     return ClassicalChessSharp(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets
@@ -3775,6 +3816,7 @@ class _ClassicalChessSharp extends ClassicalChessSharp {
 
 class _PreChess extends PreChess {
   const _PreChess({
+    required super.rule,
     required super.board,
     required super.turn,
     required super.castles,
@@ -3786,6 +3828,7 @@ class _PreChess extends PreChess {
 
   @override
   PreChess copyWith({
+    Rule? rule,
     Board? board,
     Object? pockets = _uniqueObjectInstance,
     Side? turn,
@@ -3796,6 +3839,7 @@ class _PreChess extends PreChess {
     (int, int)? remainingChecks,
   }) {
     return PreChess(
+      rule: rule ?? this.rule,
       board: board ?? this.board,
       pockets: pockets == _uniqueObjectInstance
           ? this.pockets

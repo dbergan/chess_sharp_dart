@@ -44,12 +44,7 @@ extension SharpfishExtension on Sharpfish {
   }
 
   void setVariant(String newVariant) {
-    if (newVariant != variant &&
-        (newVariant == 'chess-sharp' ||
-            newVariant == 'chess-double-sharp' ||
-            newVariant == 'chess-flat' ||
-            newVariant == 'chess-double-flat' ||
-            newVariant == 'chess-triple-flat')) {
+    if (newVariant != variant) {
       commandQueue.add(('setoption name UCI_Variant value $newVariant', false));
       setFen('startpos');
     }
@@ -84,47 +79,62 @@ extension SharpfishExtension on Sharpfish {
     final line = rawLine.trim();
     if (line.isEmpty) return;
     // print('engine: $line');
-    if (line.startsWith('info string variant chess-sharp')) {
-      variant = 'chess-sharp';
-    } else if (line.startsWith('info string variant chess-flat')) {
-      variant = 'chess-flat';
-    } else if (line.startsWith('info string variant chess-double-sharp')) {
-      variant = 'chess-double-sharp';
-    } else if (line.startsWith('info string variant chess-double-flat')) {
-      variant = 'chess-double-flat';
-    } else if (line.startsWith('info string variant chess-triple-flat')) {
-      variant = 'chess-triple-flat';
-    } else if (line.startsWith('bestmove')) {
-      final parts = line.split(' ');
+
+    final parts = line.split(' ');
+
+    if (line.startsWith('info string variant ')) {
+      variant = line.substring(20).trim();
+    }
+
+    if (parts[0] == 'bestmove') {
       if (parts.length > 1) {
         bestMove = parts[1];
       }
       readyForCommand = true;
-    } else if (line.contains('readyok') || line.contains('uciok')) {
+    }
+
+    if (line.contains('readyok') || line.contains('uciok')) {
       readyForCommand = true;
-    } else if (line.startsWith('info')) {
-      final parts = line.split(' ');
-      final scoreIdx = parts.indexOf('score');
-      if (scoreIdx != -1 && scoreIdx + 1 < parts.length) {
-        final nextPart = parts[scoreIdx + 1];
-        if (nextPart == 'cp' || nextPart == 'mate') {
-          if (scoreIdx + 2 < parts.length) {
-            final value = int.tryParse(parts[scoreIdx + 2]);
-            if (value != null) {
-              if (nextPart == 'cp') {
-                evaluation = value / 100.0;
-              } else if (nextPart == 'mate') {
-                evaluation = value >= 0 ? 1000.0 + value : -1000.0 + value;
-              }
-            }
-          }
-        } else {
-          // Some engines (or variants) output score <value> directly
-          final value = int.tryParse(nextPart);
+    }
+
+    final scoreIdx = parts.indexOf('score');
+    if (scoreIdx != -1 && scoreIdx + 1 < parts.length) {
+      final nextPart = parts[scoreIdx + 1];
+      double? eval;
+      if (nextPart == 'cp') {
+        if (scoreIdx + 2 < parts.length) {
+          final value = int.tryParse(parts[scoreIdx + 2]);
           if (value != null) {
-            evaluation = value / 100.0;
+            eval = value / 100.0;
           }
         }
+      } else {
+        // Handle 'mate', 'capture-their-king', 'lose-my-king', 'victory', etc.
+        if (scoreIdx + 2 < parts.length) {
+          final value = int.tryParse(parts[scoreIdx + 2]);
+          if (value != null) {
+            // Treated as mate-like score
+            eval = value >= 0 ? 1000.0 + value : -1000.0 + value;
+          }
+        }
+        // Fallback: Some engines (or variants) output score <value> directly
+        if (eval == null) {
+          final value = int.tryParse(nextPart);
+          if (value != null) {
+            eval = value / 100.0;
+          }
+        }
+      }
+
+      if (eval != null) {
+        // Normal engine output is relative to side to move.
+        // We want absolute evaluation (White positive, Black negative).
+        if (fen != 'startpos' &&
+            fen.split(' ').length > 1 &&
+            fen.split(' ')[1] == 'b') {
+          eval = -eval;
+        }
+        evaluation = eval;
       }
     }
   }
