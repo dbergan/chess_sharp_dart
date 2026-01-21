@@ -10,6 +10,7 @@ Pod::Spec.new do |s|
   s.exclude_files    = ['Classes/engine_src/main.cpp', 'Classes/engine_src/web_main.cpp']
   s.public_header_files = 'Classes/ChessSharpDartPlugin.h'
   
+  s.dependency 'Flutter'
   s.platform         = :ios, '11.0'
   
   # Stockfish requires C++17 or higher
