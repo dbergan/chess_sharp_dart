@@ -45,6 +45,7 @@ extension SharpfishExtension on Sharpfish {
 
   void setVariant(String newVariant) {
     if (newVariant != variant) {
+      variant = newVariant;
       commandQueue.add(('setoption name UCI_Variant value $newVariant', false));
       setFen('startpos');
     }
@@ -83,7 +84,7 @@ extension SharpfishExtension on Sharpfish {
     final parts = line.split(' ');
 
     if (line.startsWith('info string variant ')) {
-      variant = line.substring(20).trim();
+      variant = line.substring(20).trim().split(' ')[0];
     }
 
     if (parts[0] == 'bestmove') {

@@ -4,6 +4,8 @@ void main() {
   final stopwatch = Stopwatch()..start();
   const depth = 4;
   perft(Chess.initial, depth);
+  // ignore: avoid_print
   print(
-      'initial position perft at depht $depth executed in ${stopwatch.elapsed.inMilliseconds} ms');
+    'initial position perft at depht $depth executed in ${stopwatch.elapsed.inMilliseconds} ms',
+  );
 }

@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 void main() {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: ${record.message}');
+    debugPrint('${record.level.name}: ${record.time}: ${record.message}');
   });
   runApp(const EngineTestApp());
 }
@@ -23,6 +23,7 @@ class _EngineTestAppState extends State<EngineTestApp> {
   late Stream<String> _broadcastStdout;
   final List<String> _logs = [];
   final ScrollController _scrollController = ScrollController();
+  final _log = Logger('EngineTestApp');
 
   @override
   void initState() {
@@ -30,11 +31,11 @@ class _EngineTestAppState extends State<EngineTestApp> {
     _cpu = SharpfishMaker.create();
 
     // Check if the engine wrapper provides a way to see if the process started
-    print('Engine Instance Created: ${_cpu.runtimeType}');
-    print('Engine stringState: ${_cpu.stringState}');
+    _log.info('Engine Instance Created: ${_cpu.runtimeType}');
+    _log.info('Engine stringState: ${_cpu.stringState}');
 
     _broadcastStdout = _cpu.stdout.asBroadcastStream();
-    print('Engine stringState: ${_cpu.stringState}');
+    _log.info('Engine stringState: ${_cpu.stringState}');
 
     // 2. Main Logger
     _broadcastStdout.listen(
@@ -50,7 +51,7 @@ class _EngineTestAppState extends State<EngineTestApp> {
   }
 
   Future<void> _runBenchmark() async {
-    print('Engine stringState: ${_cpu.stringState}');
+    _log.info('Engine stringState: ${_cpu.stringState}');
     setState(() => _logs.add('--- Starting Benchmark ---'));
     _cpu.setVariant('chess-triple-flat');
     await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -59,7 +60,7 @@ class _EngineTestAppState extends State<EngineTestApp> {
       // Wait for bestmove
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
-    print('Best Move: ${_cpu.bestMove}');
+    _log.info('Best Move: ${_cpu.bestMove}');
   }
 
   void _scrollToBottom() {

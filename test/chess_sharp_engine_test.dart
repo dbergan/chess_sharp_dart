@@ -69,13 +69,25 @@ void main() {
 
     test('setVariant—chess-sharp', () async {
       cpu?.setVariant('chess-sharp');
-      await Future<void>.delayed(const Duration(milliseconds: 1000));
+      for (int i = 0; i < 100; i++) {
+        // Wait for engine to initialize
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        if (cpu?.variant == 'chess-sharp') {
+          break;
+        }
+      }
       expect(cpu?.variant, 'chess-sharp');
     });
 
     test('setVariant—chess-triple-flat', () async {
       cpu?.setVariant('chess-triple-flat');
-      await Future<void>.delayed(const Duration(milliseconds: 1000));
+      for (int i = 0; i < 100; i++) {
+        // Wait for engine to initialize
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        if (cpu?.variant == 'chess-triple-flat') {
+          break;
+        }
+      }
       expect(cpu?.variant, 'chess-triple-flat');
     });
 
